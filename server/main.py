@@ -11,7 +11,7 @@ load_dotenv()
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from server.routers import ingest, query, documents, bundles, payments
@@ -88,6 +88,12 @@ app.include_router(query.router, tags=["Query"])
 app.include_router(documents.router, tags=["Documents"])
 app.include_router(bundles.router, tags=["Bundles"])
 app.include_router(payments.router, tags=["Payments"])
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon_ico() -> RedirectResponse:
+    """Browsers request /favicon.ico by default; point at the SVG asset."""
+    return RedirectResponse(url="/frontend/favicon.svg", status_code=307)
 
 
 @app.get("/frontend/config.json", include_in_schema=False)

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <!-- Left claw arm -->
+  <path fill="#ff5722" d="M38 58c-4-8-14-14-22-10s-8 14-2 20c4 4 10 4 14 2l6-4z"/>
+  <path fill="#e64a19" d="M16 48c-6 4-8 12-4 18 3 5 8 6 12 5l-2-6c-2 0-4-2-5-5-2-4 0-8 3-10z"/>
+  <!-- Right claw arm -->
+  <path fill="#ff5722" d="M90 58c4-8 14-14 22-10s8 14 2 20c-4 4-10 4-14 2l-6-4z"/>
+  <path fill="#e64a19" d="M112 48c6 4 8 12 4 18-3 5-8 6-12 5l2-6c2 0 4-2 5-5 2-4 0-8-3-10z"/>
+  <!-- Legs left -->
+  <path fill="none" stroke="#d84315" stroke-width="4.5" stroke-linecap="round" d="M42 82l-18 16M38 88l-20 10M35 94l-18 6"/>
+  <!-- Legs right -->
+  <path fill="none" stroke="#d84315" stroke-width="4.5" stroke-linecap="round" d="M86 82l18 16M90 88l20 10M93 94l18 6"/>
+  <!-- Body -->
+  <ellipse cx="64" cy="80" rx="30" ry="24" fill="#ff5722"/>
+  <ellipse cx="64" cy="76" rx="22" ry="16" fill="#ff7043" opacity="0.5"/>
+  <ellipse cx="64" cy="73" rx="14" ry="9" fill="#ff8a65" opacity="0.35"/>
+  <!-- Mouth -->
+  <path fill="none" stroke="#bf360c" stroke-width="2" stroke-linecap="round" d="M58 88c2 2 4 3 6 3s4-1 6-3"/>
+  <!-- Eye stalks -->
+  <rect x="47" y="48" width="6" height="14" rx="3" fill="#e64a19"/>
+  <rect x="75" y="48" width="6" height="14" rx="3" fill="#e64a19"/>
+  <!-- Eyes -->
+  <circle cx="50" cy="44" r="9" fill="#fff3e0"/>
+  <circle cx="78" cy="44" r="9" fill="#fff3e0"/>
+  <circle cx="50" cy="44" r="5" fill="#1a1a1a"/>
+  <circle cx="78" cy="44" r="5" fill="#1a1a1a"/>
+  <circle cx="52" cy="42" r="1.8" fill="#fff"/>
+  <circle cx="80" cy="42" r="1.8" fill="#fff"/>
+</svg>
