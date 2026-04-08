@@ -55,7 +55,7 @@ The old **`api/index.py` + `functions` + `rewrites`** setup is **not** used: Ver
 |------|--------|
 | **`main.py`** (repo root) | Vercel entry: `from server.main import app`. |
 | **`vercel.json`** | Sets `"framework": "fastapi"`. |
-| **`requirements.txt`** (root) | `pip` install: `-r server/requirements.txt`. |
+| **`requirements.txt`** (root) | Full dependency list (Vercel does not reliably support `-r` includes). |
 | **`runtime.txt`** | `python-3.12`. |
 | **`.vercelignore`** | Skips `.venv`, `.env`, etc. from uploads. |
 
@@ -96,7 +96,7 @@ Add the domain in Vercel → Project → Settings → Domains, then set **`KB_AP
 - **`functions` pattern errors**: Remove any custom `functions` / `api/**/*.py` config; this project uses root **`main.py`** + **`framework: "fastapi"`** only.
 - **Import errors** (`No module named 'server'`): deploy root must be the repo root; **`server/`** must be in the deployment.
 - **Build fails on `lxml` / native deps**: check the Vercel build log; consider a container-based host if needed.
-- **`requirements.txt`**: Root file must include `-r server/requirements.txt` and **`server/requirements.txt`** must exist.
+- **`requirements.txt`**: Keep a **flat** list at the repo root (no `-r` includes). Local dev can still run `pip install -r server/requirements.txt`, which delegates to the root file.
 
 ---
 
