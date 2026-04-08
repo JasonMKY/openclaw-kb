@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Knowledge Base</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;1,300&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
+:root {
+  --bg:         #0c0b09;
+  --surface:    #141210;
+  --surface2:   #1c1a16;
+  --surface3:   #222019;
+  --border:     #2a2720;
+  --border2:    #333028;
+  --accent:     #ff5c00;
+  --accent2:    #ff8c42;
+  --accent-dim: rgba(255,92,0,0.08);
+  --green:      #00e87a;
+  --blue:       #3d8bff;
+  --gold:       #f0c040;
+  --pink:       #f472b6;
+  --text:       #f0ede5;
+  --text2:      #b8b4aa;
+  --muted:      #6b6760;
+  --muted2:     #3d3b36;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* grain */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:1000; opacity:0.4;
+}
+
+/* ─────────────────────────────────────────
+   SHARED NAV
+───────────────────────────────────────── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:200;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 40px; height:60px;
+  background:rgba(12,11,9,0.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+
+.logo {
+  display:flex; align-items:center; gap:10px;
+  font-family:'Clash Display',sans-serif; font-weight:600; font-size:17px;
+  letter-spacing:-0.02em; cursor:pointer; text-decoration:none; color:var(--text);
+}
+.logo-crab {
+  font-size:22px;
+  filter:drop-shadow(0 0 8px var(--accent));
+  animation:breathe 3s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { filter:drop-shadow(0 0 8px var(--accent)); }
+  50%      { filter:drop-shadow(0 0 18px var(--accent2)); }
+}
+
+.nav-center {
+  display:flex; align-items:center; gap:4px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:10px; padding:4px;
+}
+.nav-page-btn {
+  padding:6px 18px; border-radius:7px;
+  font-size:13px; font-weight:500; cursor:pointer;
+  transition:all 0.2s; color:var(--muted);
+  border:none; background:transparent;
+  font-family:'DM Sans',sans-serif;
+  display:flex; align-items:center; gap:6px;
+}
+.nav-page-btn:hover { color:var(--text); }
+.nav-page-btn.active { background:var(--surface2); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.4); }
+.nav-page-btn .nb-badge {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.06em;
+  padding:1px 6px; border-radius:3px;
+  background:rgba(255,92,0,0.15); border:1px solid rgba(255,92,0,0.2); color:var(--accent2);
+}
+
+.nav-links { display:flex; align-items:center; gap:24px; list-style:none; font-size:13px; font-weight:500; }
+.nav-links a { color:var(--muted); text-decoration:none; transition:color 0.2s; cursor:pointer; }
+.nav-links a:hover { color:var(--text); }
+.nav-home-link.active { color:var(--text); font-weight:500; }
+.nav-right { display:flex; align-items:center; gap:10px; }
+
+.btn {
+  display:inline-flex; align-items:center; gap:7px;
+  padding:8px 18px; border-radius:7px;
+  font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s;
+  text-decoration:none; border:none; outline:none;
+  font-family:'DM Sans',sans-serif;
+}
+.btn-primary { background:var(--accent); color:#fff; }
+.btn-primary:hover { background:var(--accent2); transform:translateY(-1px); }
+.btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); }
+.btn-ghost:hover { border-color:var(--muted2); background:var(--surface); }
+.btn-sm { padding:6px 14px; font-size:12px; }
+
+/* ─────────────────────────────────────────
+   PAGE SYSTEM
+───────────────────────────────────────── */
+.page { display:none; min-height:100vh; padding-top:60px; animation:pageIn 0.3s ease both; }
+.page.active { display:block; }
+@keyframes pageIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─────────────────────────────────────────
+   HOME — HERO
+───────────────────────────────────────── */
+.hero {
+  min-height:calc(100vh - 60px);
+  display:flex; align-items:center; justify-content:center;
+  text-align:center; padding:80px 40px;
+  position:relative; overflow:hidden;
+}
+.hero-glow {
+  position:absolute; width:600px; height:600px;
+  background:radial-gradient(circle,rgba(255,92,0,0.12) 0%,transparent 70%);
+  top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none;
+}
+.hero-grid {
+  position:absolute; inset:0;
+  background-image:
+    linear-gradient(rgba(255,92,0,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,92,0,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse at center,black 30%,transparent 70%);
+}
+.hero-content { position:relative; max-width:760px; }
+.hero-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 14px; border:1px solid rgba(255,92,0,0.3); border-radius:100px;
+  font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.08em;
+  color:var(--accent2); margin-bottom:28px; animation:fadeUp 0.6s ease both;
+}
+.hero-badge::before {
+  content:''; width:6px; height:6px; background:var(--green); border-radius:50%;
+  box-shadow:0 0 6px var(--green); animation:pulse 2s ease infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+h1 {
+  font-family:'Clash Display',sans-serif; font-weight:600;
+  font-size:clamp(42px,7vw,80px); line-height:1.0; letter-spacing:-0.04em;
+  margin-bottom:24px; animation:fadeUp 0.6s 0.1s ease both;
+}
+h1 .accent { color:var(--accent); }
+
+.hero-sub {
+  font-size:18px; color:var(--muted); max-width:500px; margin:0 auto 40px;
+  font-weight:300; line-height:1.7; animation:fadeUp 0.6s 0.2s ease both;
+}
+.hero-ctas { display:flex; align-items:center; justify-content:center; gap:12px; animation:fadeUp 0.6s 0.3s ease both; }
+.hero-ctas .btn { padding:12px 24px; font-size:14px; }
+.kbhub-cta {
+  display:inline-flex; align-items:center; gap:8px; padding:9px 20px;
+  border:1px solid rgba(240,192,64,0.25); border-radius:8px;
+  background:rgba(240,192,64,0.05); font-size:13px; color:var(--gold);
+  cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; font-weight:500;
+}
+.kbhub-cta:hover { background:rgba(240,192,64,0.1); border-color:rgba(240,192,64,0.4); transform:translateY(-1px); }
+
+/* terminal */
+.hero-terminal {
+  margin:64px auto 0; background:var(--surface); border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; text-align:left; max-width:600px;
+  animation:fadeUp 0.6s 0.4s ease both; box-shadow:0 40px 80px rgba(0,0,0,0.6);
+}
+.terminal-bar {
+  display:flex; align-items:center; gap:7px; padding:12px 16px;
+  background:var(--surface2); border-bottom:1px solid var(--border);
+}
+.dot { width:10px; height:10px; border-radius:50%; }
+.dot-r{background:#ff5f57} .dot-y{background:#ffbd2e} .dot-g{background:#28c840}
+.terminal-title { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-left:8px; }
+.terminal-body { padding:20px 24px; font-family:'DM Mono',monospace; font-size:13px; line-height:1.8; }
+.t-out{color:var(--green)} .t-comment{color:var(--muted2);font-style:italic}
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ─────────────────────────────────────────
+   HOME — SECTIONS
+───────────────────────────────────────── */
+.hp-section { padding:100px 40px; max-width:1100px; margin:0 auto; }
+.section-label { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+h2 { font-family:'Clash Display',sans-serif; font-weight:500; font-size:clamp(28px,4vw,44px); letter-spacing:-0.03em; line-height:1.1; margin-bottom:16px; }
+.section-sub { color:var(--muted); font-size:16px; max-width:480px; line-height:1.7; font-weight:300; }
+.divider { border:none; border-top:1px solid var(--border); margin:0; }
+.reveal { opacity:0; transform:translateY(24px); transition:opacity 0.7s ease,transform 0.7s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* features grid */
+.features-grid {
+  display:grid; grid-template-columns:repeat(3,1fr);
+  gap:1px; background:var(--border); border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; margin-top:60px;
+}
+.feature-card { background:var(--surface); padding:36px 32px; transition:background 0.2s; position:relative; overflow:hidden; }
+.feature-card:hover { background:var(--surface2); }
+.feature-card::after { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; transition:opacity 0.3s; }
+.feature-card:hover::after { opacity:1; }
+.feature-icon { font-size:28px; margin-bottom:20px; display:block; }
+.feature-card h3 { font-family:'Clash Display',sans-serif; font-weight:500; font-size:17px; margin-bottom:10px; letter-spacing:-0.01em; }
+.feature-card p { color:var(--muted); font-size:14px; line-height:1.65; font-weight:300; }
+.feature-tag { display:inline-block; margin-top:16px; padding:3px 10px; background:rgba(255,92,0,0.1); border:1px solid rgba(255,92,0,0.2); border-radius:4px; font-family:'DM Mono',monospace; font-size:11px; color:var(--accent2); }
+
+/* ─────────────────────────────────────────
+   HOME — DASHBOARD PREVIEW (KBHub style)
+───────────────────────────────────────── */
+.dashboard-wrap {
+  margin-top:60px; border:1px solid var(--border);
+  border-radius:16px; overflow:hidden;
+  box-shadow:0 60px 120px rgba(0,0,0,0.7);
+  pointer-events:none; user-select:none;
+}
+
+/* topbar */
+.dash-topbar {
+  background:var(--surface); border-bottom:1px solid var(--border);
+  padding:0 24px; height:52px;
+  display:flex; align-items:center; gap:16px;
+}
+.dash-brand { display:flex; align-items:center; gap:8px; font-family:'Clash Display',sans-serif; font-weight:600; font-size:14px; letter-spacing:-0.02em; }
+.dash-brand-dot { width:26px; height:26px; border-radius:6px; background:var(--accent); display:flex; align-items:center; justify-content:center; font-size:13px; box-shadow:0 0 12px rgba(255,92,0,0.35); }
+.dash-tabs { display:flex; gap:2px; background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:3px; }
+.dash-tab { padding:5px 16px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--muted); font-family:'DM Sans',sans-serif; }
+.dash-tab.active { background:var(--surface2); color:var(--text); }
+.dash-tab:hover:not(.active) { color:var(--text2); }
+.dash-status { margin-left:auto; display:flex; align-items:center; gap:6px; font-family:'DM Mono',monospace; font-size:11px; color:var(--green); }
+.status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 6px var(--green); animation:pulse 2s infinite; }
+
+/* body */
+.dash-body { background:var(--bg); display:grid; grid-template-columns:220px 1fr; min-height:520px; }
+
+/* sidebar */
+.dash-sidebar { background:var(--surface); border-right:1px solid var(--border); padding:16px 0; }
+.ds-section { padding:0 14px; margin-bottom:18px; }
+.ds-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; padding:0 8px; margin-bottom:6px; }
+.ds-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:7px; font-size:13px; cursor:pointer; transition:all 0.15s; color:var(--text2); margin-bottom:2px; }
+.ds-item:hover { background:var(--surface2); color:var(--text); }
+.ds-item.active { background:var(--accent-dim); color:var(--accent2); }
+.ds-item .di { font-size:14px; opacity:0.8; width:16px; text-align:center; }
+.ds-count { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; background:var(--surface2); padding:2px 7px; border-radius:10px; color:var(--muted); }
+.ds-divider { border:none; border-top:1px solid var(--border); margin:10px 14px; }
+.ds-stat-row { display:flex; justify-content:space-between; font-size:12px; padding:6px 8px; border-bottom:1px solid var(--border); }
+.ds-stat-row:last-child { border-bottom:none; }
+
+/* main */
+.dash-main { padding:24px 28px; }
+.dm-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.dm-title { font-family:'Clash Display',sans-serif; font-weight:500; font-size:18px; letter-spacing:-0.02em; }
+.dm-title-sub { font-family:'DM Mono',monospace; font-size:13px; font-weight:400; color:var(--muted); margin-left:6px; }
+
+/* stats */
+.stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:18px; }
+.stat-card { background:var(--surface2); padding:16px 18px; }
+.stat-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.stat-value { font-family:'Clash Display',sans-serif; font-weight:500; font-size:24px; letter-spacing:-0.02em; }
+.stat-sub { font-size:11px; color:var(--muted); margin-top:2px; }
+.stat-up { color:var(--green); }
+
+/* search */
+.dm-search { display:flex; align-items:center; gap:10px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:9px 14px; margin-bottom:16px; transition:border-color 0.2s; }
+.dm-search:focus-within { border-color:var(--accent); }
+.dm-search input { background:none; border:none; outline:none; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; flex:1; }
+.dm-search input::placeholder { color:var(--muted); }
+.dm-search-icon { color:var(--muted); font-size:15px; }
+.dm-kbd { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); border:1px solid var(--border); border-radius:4px; padding:2px 6px; }
+
+/* doc list */
+.doc-list { display:flex; flex-direction:column; gap:1px; background:var(--border); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.doc-row { background:var(--surface); padding:12px 16px; display:flex; align-items:center; gap:14px; transition:background 0.15s; cursor:default; }
+.doc-row:hover { background:var(--surface2); }
+.doc-icon-wrap { width:34px; height:34px; border-radius:8px; background:var(--surface2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.doc-meta { flex:1; min-width:0; }
+.doc-title { font-size:13px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.doc-sub { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+.doc-tags { display:flex; gap:4px; flex-shrink:0; }
+.d-tag { padding:2px 8px; border-radius:4px; font-family:'DM Mono',monospace; font-size:10px; background:rgba(61,139,255,0.1); color:var(--blue); border:1px solid rgba(61,139,255,0.15); }
+.doc-chunks { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); flex-shrink:0; white-space:nowrap; }
+.doc-actions { display:flex; gap:5px; opacity:0; transition:opacity 0.15s; flex-shrink:0; }
+.doc-row:hover .doc-actions { opacity:1; }
+.icon-btn { background:var(--surface2); border:1px solid var(--border); border-radius:5px; padding:4px 8px; font-size:11px; cursor:pointer; color:var(--muted); transition:all 0.15s; }
+.icon-btn:hover { color:var(--text); border-color:var(--muted); }
+.icon-btn.danger:hover { border-color:#ff4444; color:#ff4444; }
+
+/* tab panels */
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+/* ingest tab */
+.type-btn { padding:6px 14px; border-radius:6px; border:1px solid var(--border); background:var(--surface2); color:var(--text2); font-size:12px; font-family:'DM Sans',sans-serif; cursor:pointer; transition:all 0.15s; }
+.type-btn.active,.type-btn:hover { background:var(--accent-dim); border-color:rgba(255,92,0,0.3); color:var(--accent2); }
+.ingest-types { display:flex; gap:6px; margin-bottom:16px; }
+.field-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; display:block; }
+textarea { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; color:var(--text); font-family:'DM Mono',monospace; font-size:12px; line-height:1.6; resize:vertical; min-height:110px; outline:none; transition:border-color 0.2s; }
+textarea:focus { border-color:var(--accent); }
+textarea::placeholder { color:var(--muted); }
+.ingest-footer { display:flex; justify-content:space-between; align-items:center; margin-top:12px; gap:10px; }
+.ingest-fields { display:flex; gap:8px; flex:1; }
+.ingest-field { background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:7px 12px; font-family:'DM Mono',monospace; font-size:12px; color:var(--text); outline:none; transition:border-color 0.2s; }
+.ingest-field:focus { border-color:var(--accent); }
+.ingest-field::placeholder { color:var(--muted); }
+
+/* ask tab */
+.ask-panel { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:14px; }
+.ask-input-row { display:flex; border-bottom:1px solid var(--border); }
+.ask-input-row input { flex:1; background:none; border:none; outline:none; padding:15px 18px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; }
+.ask-input-row input::placeholder { color:var(--muted); }
+.ask-send { padding:0 22px; background:var(--accent); border:none; cursor:pointer; color:#fff; font-family:'Clash Display',sans-serif; font-weight:500; font-size:13px; transition:background 0.2s; }
+.ask-send:hover { background:var(--accent2); }
+.ask-answer { padding:20px; }
+.answer-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.answer-label::before { content:''; width:6px; height:6px; background:var(--accent); border-radius:50%; display:inline-block; }
+.answer-text { font-size:14px; line-height:1.75; color:var(--text2); font-weight:300; }
+.answer-sources { margin-top:14px; padding-top:12px; border-top:1px solid var(--border); display:flex; flex-wrap:wrap; gap:6px; }
+.source-chip { display:flex; align-items:center; gap:6px; padding:4px 11px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; font-size:11px; color:var(--text2); cursor:pointer; transition:all 0.15s; }
+.source-chip:hover { border-color:var(--muted); color:var(--text); }
+.source-num { font-family:'DM Mono',monospace; color:var(--accent2); font-size:10px; }
+.recent-queries { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.rq-header { padding:11px 16px; border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+.rq-item { display:flex; justify-content:space-between; align-items:center; padding:11px 16px; border-bottom:1px solid var(--border); font-size:13px; cursor:pointer; transition:background 0.15s; }
+.rq-item:last-child { border-bottom:none; }
+.rq-item:hover { background:var(--surface2); }
+.rq-time { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); flex-shrink:0; margin-left:12px; }
+
+/* ─────────────────────────────────────────
+   HOME — API + INSTALL
+───────────────────────────────────────── */
+.api-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:50px; }
+.api-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:border-color 0.2s; }
+.api-card:hover { border-color:var(--muted2); }
+.api-header { display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--border); }
+.method { font-family:'DM Mono',monospace; font-size:11px; padding:3px 8px; border-radius:4px; }
+.method-post{background:rgba(0,232,122,0.15);color:var(--green)}
+.method-get {background:rgba(61,139,255,0.15);color:var(--blue)}
+.method-del {background:rgba(255,80,80,0.15);color:#ff6060}
+.api-path { font-family:'DM Mono',monospace; font-size:13px; color:var(--text); }
+.api-desc { font-size:12px; color:var(--muted); margin-left:auto; }
+.api-body { padding:14px 18px; font-family:'DM Mono',monospace; font-size:12px; line-height:1.7; color:var(--muted); }
+
+.install-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:50px; }
+.step-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:28px; position:relative; }
+.step-num { font-family:'Clash Display',sans-serif; font-weight:600; font-size:48px; color:rgba(255,92,0,0.1); position:absolute; top:16px; right:20px; line-height:1; }
+.step-card h3 { font-family:'Clash Display',sans-serif; font-weight:500; font-size:16px; margin-bottom:12px; letter-spacing:-0.01em; }
+.step-card p { color:var(--muted); font-size:13px; line-height:1.65; font-weight:300; margin-bottom:16px; }
+.code-snippet { background:var(--surface2); border:1px solid var(--border); border-radius:6px; padding:10px 14px; font-family:'DM Mono',monospace; font-size:12px; color:var(--text); line-height:1.6; }
+
+/* ─────────────────────────────────────────
+   HOME — FOOTER
+───────────────────────────────────────── */
+footer { border-top:1px solid var(--border); padding:40px; display:flex; align-items:center; justify-content:space-between; max-width:1100px; margin:0 auto; }
+.footer-links { display:flex; gap:24px; list-style:none; font-size:13px; }
+.footer-links a { color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.footer-links a:hover { color:var(--text); }
+.footer-copy { font-size:12px; color:var(--muted2); font-family:'DM Mono',monospace; }
+
+/* ─────────────────────────────────────────
+   KBHUB PAGE
+───────────────────────────────────────── */
+.kbhub-wrap { display:grid; grid-template-columns:260px 1fr; min-height:calc(100vh - 60px); }
+
+/* sidebar */
+.kbhub-sidebar { background:var(--surface); border-right:1px solid var(--border); position:sticky; top:60px; height:calc(100vh - 60px); overflow-y:auto; display:flex; flex-direction:column; }
+.sb-logo { padding:18px 20px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+.sb-logo-mark { width:30px; height:30px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:15px; box-shadow:0 0 16px rgba(255,92,0,0.3); }
+.sb-logo-text { font-family:'Clash Display',sans-serif; font-weight:600; font-size:16px; letter-spacing:-0.03em; }
+.sb-logo-text span { color:var(--accent); }
+.sb-badge { margin-left:auto; font-family:'DM Mono',monospace; font-size:9px; letter-spacing:0.06em; background:var(--accent-dim); border:1px solid rgba(255,92,0,0.2); color:var(--accent2); padding:2px 6px; border-radius:4px; }
+.sb-search { margin:14px 16px 0; display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:9px 12px; transition:border-color 0.2s; }
+.sb-search:focus-within { border-color:var(--accent); }
+.sb-search input { background:none; border:none; outline:none; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; flex:1; }
+.sb-search input::placeholder { color:var(--muted); }
+.sb-section { padding:18px 16px 4px; }
+.sb-section-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); padding:0 8px; margin-bottom:6px; }
+.sb-item { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:7px; font-size:13px; cursor:pointer; transition:all 0.15s; color:var(--text2); margin-bottom:2px; }
+.sb-item:hover { background:var(--surface2); color:var(--text); }
+.sb-item.active { background:var(--accent-dim); color:var(--accent2); font-weight:500; }
+.sb-icon { font-size:15px; opacity:0.8; width:18px; text-align:center; }
+.sb-count { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; background:var(--surface2); padding:2px 7px; border-radius:10px; color:var(--muted); }
+.sb-divider { border:none; border-top:1px solid var(--border); margin:10px 16px; }
+.cat-tags { padding:4px 16px 8px; display:flex; flex-wrap:wrap; gap:6px; }
+.cat-tag { padding:4px 10px; border-radius:5px; border:1px solid var(--border); font-size:11px; color:var(--text2); cursor:pointer; transition:all 0.15s; background:var(--surface2); }
+.cat-tag:hover,.cat-tag.active { background:var(--accent-dim); border-color:rgba(255,92,0,0.25); color:var(--accent2); }
+.sb-footer { margin-top:auto; padding:16px; border-top:1px solid var(--border); }
+.user-row { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; background:var(--surface2); cursor:pointer; }
+.avatar { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--accent),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0; }
+.user-name { font-size:13px; font-weight:500; }
+.user-handle { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+
+/* kbhub main */
+.kbhub-main { overflow-y:auto; }
+.kbhub-topbar { position:sticky; top:0; z-index:50; background:rgba(12,11,9,0.9); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); padding:14px 32px; display:flex; align-items:center; gap:16px; }
+.kbhub-topbar-title { font-family:'Clash Display',sans-serif; font-weight:500; font-size:18px; letter-spacing:-0.02em; }
+.kbhub-topbar-sub { color:var(--muted); font-size:13px; }
+.kbhub-topbar-actions { margin-left:auto; display:flex; gap:8px; align-items:center; }
+
+/* featured banner */
+.featured-banner { padding:26px 32px; background:linear-gradient(135deg,#1a1200 0%,#0f0c00 50%,#0c0b09 100%); border-bottom:1px solid var(--border); position:relative; overflow:hidden; }
+.featured-banner::before { content:''; position:absolute; width:400px; height:400px; background:radial-gradient(circle,rgba(240,192,64,0.06) 0%,transparent 70%); right:-100px; top:-150px; pointer-events:none; }
+.featured-label { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; display:flex; align-items:center; gap:6px; }
+.featured-label::before { content:'★'; }
+.featured-cards { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.featured-card { background:rgba(255,255,255,0.03); border:1px solid rgba(240,192,64,0.12); border-radius:10px; padding:18px 20px; cursor:pointer; transition:all 0.2s; }
+.featured-card:hover { background:rgba(255,255,255,0.05); border-color:rgba(240,192,64,0.25); transform:translateY(-2px); }
+.fc-icon { width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:19px; margin-bottom:10px; }
+.fc-name { font-family:'Clash Display',sans-serif; font-weight:500; font-size:14px; letter-spacing:-0.01em; margin-bottom:4px; }
+.fc-desc { font-size:12px; color:var(--text2); line-height:1.5; font-weight:300; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.fc-footer { margin-top:12px; display:flex; align-items:center; gap:8px; }
+.fc-star { color:var(--gold); font-size:12px; }
+.fc-stat { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); }
+.fc-badge { margin-left:auto; padding:2px 7px; background:rgba(240,192,64,0.1); border:1px solid rgba(240,192,64,0.2); border-radius:4px; font-family:'DM Mono',monospace; font-size:9px; color:var(--gold); }
+
+/* filter bar */
+.filter-bar { padding:12px 32px; display:flex; align-items:center; gap:10px; border-bottom:1px solid var(--border); background:var(--surface); }
+.sort-tabs { display:flex; gap:2px; background:var(--bg); border-radius:8px; padding:3px; border:1px solid var(--border); }
+.sort-tab { padding:5px 14px; border-radius:6px; font-size:12px; font-weight:500; cursor:pointer; transition:all 0.15s; color:var(--muted); display:flex; align-items:center; gap:5px; }
+.sort-tab.active { background:var(--surface2); color:var(--text); }
+.filter-chip { display:flex; align-items:center; gap:5px; padding:5px 12px; border-radius:6px; border:1px solid var(--border); background:var(--surface2); font-size:12px; color:var(--text2); cursor:pointer; transition:all 0.15s; }
+.filter-chip:hover { border-color:var(--muted2); color:var(--text); }
+.filter-chip.on { border-color:rgba(255,92,0,0.3); background:var(--accent-dim); color:var(--accent2); }
+.result-count { margin-left:auto; font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); }
+
+/* kb grid */
+.kb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1px; background:var(--border); }
+.kb-card { background:var(--bg); padding:22px 24px; cursor:pointer; transition:background 0.15s; position:relative; overflow:hidden; animation:fadeIn 0.3s ease both; }
+.kb-card:hover { background:var(--surface); }
+.kb-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--accent),var(--gold)); opacity:0; transition:opacity 0.2s; }
+.kb-card:hover::before { opacity:1; }
+.kb-card-header { display:flex; align-items:flex-start; gap:12px; margin-bottom:12px; }
+.kb-icon { width:40px; height:40px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.kb-meta { flex:1; min-width:0; }
+.kb-name { font-family:'Clash Display',sans-serif; font-weight:500; font-size:14px; letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.kb-author { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px; }
+.kb-author span { color:var(--accent2); }
+.kb-desc { font-size:12px; color:var(--text2); line-height:1.6; margin-bottom:14px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; font-weight:300; }
+.kb-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:14px; }
+.kb-tag { padding:3px 8px; border-radius:4px; font-size:10px; font-family:'DM Mono',monospace; border:1px solid var(--border); color:var(--text2); background:var(--surface2); }
+.kb-card-footer { display:flex; align-items:center; gap:12px; padding-top:12px; border-top:1px solid var(--border); }
+.kb-stat { display:flex; align-items:center; gap:4px; font-size:11px; color:var(--muted); font-family:'DM Mono',monospace; }
+.kb-stat strong { color:var(--text2); font-weight:400; }
+.kb-clone-btn { margin-left:auto; padding:4px 10px; border-radius:5px; font-size:11px; font-weight:500; background:var(--surface2); border:1px solid var(--border); color:var(--text2); cursor:pointer; transition:all 0.2s; font-family:'DM Sans',sans-serif; white-space:nowrap; line-height:1.3; flex-shrink:0; }
+.kb-clone-btn:hover { background:var(--accent); border-color:var(--accent); color:#fff; transform:translateY(-1px); }
+
+.kb-price-badge { display:inline-block; font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; vertical-align:middle; margin-left:6px; line-height:1.4; }
+.kb-price-badge.free { background:var(--surface2); color:var(--muted); }
+.kb-price-badge.paid { background:var(--accent); color:#fff; }
+.kb-price-badge.purchased { background:#1a7a3a; color:#fff; }
+
+.empty-state { grid-column:1/-1; text-align:center; padding:60px 20px; }
+.empty-icon { font-size:48px; margin-bottom:12px; }
+.empty-title { font-size:18px; font-weight:600; color:var(--text); margin-bottom:6px; font-family:'Clash Display',sans-serif; }
+.empty-sub { font-size:14px; color:var(--muted); }
+
+.pub-content-list { border:1px solid var(--border); border-radius:8px; padding:8px; max-height:180px; overflow-y:auto; background:var(--surface2); }
+.pub-empty { text-align:center; padding:14px 8px; font-size:12px; color:var(--muted); }
+.pub-item { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; background:var(--surface); margin-bottom:4px; font-size:12px; }
+.pub-item:last-child { margin-bottom:0; }
+.pub-item-icon { flex-shrink:0; width:22px; text-align:center; }
+.pub-item-info { flex:1; min-width:0; }
+.pub-item-title { font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pub-item-meta { font-size:11px; color:var(--muted); }
+.pub-item-remove { flex-shrink:0; background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:2px 4px; border-radius:4px; line-height:1; }
+.pub-item-remove:hover { color:var(--accent); background:var(--surface2); }
+
+@keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.kb-card:nth-child(1){animation-delay:.05s} .kb-card:nth-child(2){animation-delay:.1s}
+.kb-card:nth-child(3){animation-delay:.15s} .kb-card:nth-child(4){animation-delay:.2s}
+.kb-card:nth-child(5){animation-delay:.25s} .kb-card:nth-child(6){animation-delay:.3s}
+
+/* color helpers */
+.c-blue  {background:rgba(91,156,246,0.15)}  .c-green {background:rgba(61,220,132,0.15)}
+.c-pink  {background:rgba(244,114,182,0.15)} .c-orange{background:rgba(255,92,0,0.15)}
+.c-gold  {background:rgba(240,192,64,0.15)}  .c-purple{background:rgba(167,139,250,0.15)}
+
+/* ─────────────────────────────────────────
+   MODALS
+───────────────────────────────────────── */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.72); backdrop-filter:blur(10px); z-index:500; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.25s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:16px; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; transform:translateY(20px); transition:transform 0.25s; margin:20px; }
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-hd { padding:24px 28px 0; display:flex; align-items:center; gap:14px; }
+.modal-icon { width:46px; height:46px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0; }
+.modal-title { font-family:'Clash Display',sans-serif; font-weight:500; font-size:19px; letter-spacing:-0.02em; }
+.modal-sub { font-family:'DM Mono',monospace; font-size:12px; color:var(--muted); margin-top:2px; }
+.modal-close { margin-left:auto; background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:6px 10px; cursor:pointer; color:var(--muted); font-size:13px; transition:all 0.15s; }
+.modal-close:hover { color:var(--text); }
+.modal-bd { padding:20px 28px; }
+.modal-ft { padding:16px 28px 24px; display:flex; gap:10px; }
+.modal-desc { font-size:14px; color:var(--text2); line-height:1.7; font-weight:300; margin-bottom:18px; }
+.m-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:18px; }
+.m-stat { background:var(--surface2); padding:14px 16px; text-align:center; }
+.m-stat-val { font-family:'Clash Display',sans-serif; font-weight:500; font-size:19px; letter-spacing:-0.02em; }
+.m-stat-label { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); margin-top:2px; }
+.m-section { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+.sample-docs { display:flex; flex-direction:column; gap:6px; margin-bottom:18px; }
+.sample-doc { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--surface2); border-radius:7px; font-size:12px; border:1px solid var(--border); }
+.sd-icon { font-size:13px; opacity:0.7; }
+.sd-name { flex:1; }
+.sd-chunks { font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+.m-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
+.m-tag { padding:3px 9px; border-radius:5px; border:1px solid var(--border); background:var(--surface2); font-size:11px; font-family:'DM Mono',monospace; color:var(--text2); }
+.clone-box { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px 16px; margin-bottom:14px; }
+.clone-cmd { font-family:'DM Mono',monospace; font-size:13px; color:var(--accent2); margin-top:8px; display:flex; align-items:center; gap:10px; }
+.copy-btn { margin-left:auto; padding:4px 10px; background:var(--surface); border:1px solid var(--border); border-radius:5px; font-size:11px; cursor:pointer; color:var(--muted); transition:all 0.15s; font-family:'DM Sans',sans-serif; }
+.copy-btn:hover { color:var(--text); }
+
+/* publish form */
+.form-group { margin-bottom:14px; }
+.form-label { display:block; font-family:'DM Mono',monospace; font-size:10px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
+.form-input { width:100%; background:var(--surface2); border:1px solid var(--border); border-radius:7px; padding:10px 13px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; transition:border-color 0.2s; }
+.form-input:focus { border-color:var(--accent); }
+.form-input::placeholder { color:var(--muted); }
+textarea.form-input { resize:vertical; min-height:80px; line-height:1.6; font-size:13px; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.radio-group { display:flex; gap:8px; }
+.radio-option { flex:1; padding:9px 12px; border:1px solid var(--border); border-radius:7px; cursor:pointer; text-align:center; font-size:13px; transition:all 0.15s; color:var(--text2); background:var(--surface2); }
+.radio-option.selected { background:var(--accent-dim); border-color:rgba(255,92,0,0.3); color:var(--accent2); }
+.icon-picker { display:flex; flex-wrap:wrap; gap:8px; }
+.icon-opt { width:36px; height:36px; border-radius:8px; border:1px solid var(--border); background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:19px; cursor:pointer; transition:all 0.15s; }
+.icon-opt.selected,.icon-opt:hover { background:var(--accent-dim); border-color:rgba(255,92,0,0.3); transform:scale(1.05); }
+
+/* toast */
+.toast { position:fixed; bottom:28px; right:28px; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:13px 17px; display:flex; align-items:center; gap:10px; font-size:13px; box-shadow:0 20px 40px rgba(0,0,0,0.4); z-index:9000; transform:translateY(80px); opacity:0; transition:all 0.3s; }
+.toast.show { transform:translateY(0); opacity:1; }
+.toast-icon { font-size:17px; }
+
+::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* auth */
+.auth-trigger { padding:6px 14px; border-radius:7px; font-size:13px; font-weight:500; cursor:pointer; transition:all 0.2s; color:var(--text2); border:1px solid var(--border); background:var(--surface); font-family:'DM Sans',sans-serif; display:flex; align-items:center; gap:8px; }
+.auth-trigger:hover { border-color:var(--muted2); color:var(--text); }
+.auth-trigger.logged-in { border-color:rgba(255,92,0,0.25); background:var(--accent-dim); color:var(--accent2); }
+.nav-avatar { width:26px; height:26px; border-radius:6px; background:linear-gradient(135deg,var(--accent),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; flex-shrink:0; color:#fff; }
+.auth-tabs { display:flex; gap:2px; background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:3px; margin-bottom:18px; }
+.auth-tab { flex:1; padding:8px; border-radius:6px; font-size:13px; font-weight:500; cursor:pointer; text-align:center; transition:all 0.15s; color:var(--muted); background:transparent; border:none; font-family:'DM Sans',sans-serif; }
+.auth-tab.active { background:var(--surface); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+.auth-panel { display:none; }
+.auth-panel.active { display:block; }
+.auth-msg { font-size:12px; padding:8px 12px; border-radius:6px; margin-bottom:12px; display:none; }
+.auth-msg.error { display:block; background:rgba(255,68,68,0.1); border:1px solid rgba(255,68,68,0.2); color:#ff6060; }
+.auth-msg.success { display:block; background:rgba(0,232,122,0.1); border:1px solid rgba(0,232,122,0.2); color:var(--green); }
+.user-menu { position:relative; }
+.user-menu-dropdown { display:none; position:absolute; top:100%; right:0; margin-top:6px; background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; min-width:200px; box-shadow:0 20px 40px rgba(0,0,0,0.5); z-index:300; }
+.user-menu-dropdown.open { display:block; }
+.um-header { padding:14px 16px; border-bottom:1px solid var(--border); }
+.um-name { font-size:13px; font-weight:500; }
+.um-handle { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:2px; }
+.um-item { display:flex; align-items:center; gap:10px; padding:10px 16px; font-size:13px; cursor:pointer; transition:background 0.15s; color:var(--text2); }
+.um-item:hover { background:var(--surface2); color:var(--text); }
+.um-item.danger { color:#ff6060; }
+.um-item.danger:hover { background:rgba(255,68,68,0.05); }
+.clone-progress { margin-top:12px; display:none; }
+.clone-progress.active { display:block; }
+.progress-bar { height:4px; background:var(--surface2); border-radius:2px; overflow:hidden; margin-top:6px; }
+.progress-fill { height:100%; background:var(--accent); transition:width 0.3s; border-radius:2px; }
+.progress-label { font-family:'DM Mono',monospace; font-size:11px; color:var(--muted); margin-top:4px; }
+.review-section { margin-top:18px; }
+.review-form { display:flex; flex-direction:column; gap:8px; margin-bottom:14px; }
+.star-picker { display:flex; gap:4px; }
+.star-pick { font-size:20px; cursor:pointer; opacity:0.3; transition:opacity 0.15s; }
+.star-pick.on { opacity:1; color:var(--gold); }
+.review-list { display:flex; flex-direction:column; gap:8px; }
+.review-item { background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px 14px; }
+.review-top { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+.review-author { font-size:12px; font-weight:500; }
+.review-stars { font-size:12px; color:var(--gold); }
+.review-date { margin-left:auto; font-family:'DM Mono',monospace; font-size:10px; color:var(--muted); }
+.review-body { font-size:13px; color:var(--text2); line-height:1.6; font-weight:300; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- ═══════════════ NAV ═══════════════ -->
+<nav>
+  <a class="logo" onclick="showPage('home')">
+    <span class="logo-crab">🦞</span>
+    OpenClaw <span style="color:var(--accent)">KB</span>
+  </a>
+
+  <ul class="nav-links" id="homeLinks">
+    <li><a onclick="showPage('home')" style="cursor:pointer" id="btn-home" class="nav-home-link active">Home</a></li>
+    <li><a href="#features" onclick="showPage('home')">Features</a></li>
+    <li><a href="#dashboard" onclick="showPage('home')">Dashboard</a></li>
+    <li><a href="#install" onclick="showPage('home')">Install</a></li>
+    <li><a href="https://docs.openclaw.ai" target="_blank">Docs ↗</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button class="btn btn-primary btn-sm" id="btn-kbhub" onclick="showPage('kbhub')">🧠 KBHub</button>
+    <div class="user-menu" id="userMenu">
+      <button class="auth-trigger" id="authTrigger" onclick="onAuthTriggerClick()">
+        <span class="nav-avatar" id="navAvatar">?</span>
+        <span id="authTriggerLabel">Sign In</span>
+      </button>
+      <div class="user-menu-dropdown" id="userMenuDropdown">
+        <div class="um-header"><div class="um-name" id="umName"></div><div class="um-handle" id="umHandle"></div></div>
+        <div class="um-item" onclick="showPage('my-kbs');closeUserMenu()">🧠 My KBs</div>
+        <div class="um-item" onclick="showPage('my-clones');closeUserMenu()">⎘ My Clones</div>
+        <div class="um-item" onclick="showPage('kbhub');closeUserMenu()">♡ Starred</div>
+        <div class="um-item" onclick="showPage('account');closeUserMenu()">⚙ Account</div>
+        <div class="um-item danger" onclick="signOut()">↪ Sign Out</div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+
+<!-- ═══════════════ PAGE 1 — HOME ═══════════════ -->
+<div class="page active" id="page-home">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-content">
+      <div class="hero-badge">✦ OpenClaw Skill · v1.0.0</div>
+      <h1>Intelligence,<br><span class="accent">On Demand.</span></h1>
+      <p class="hero-sub">Semantic knowledge base with vector search and RAG. Ingest anything, retrieve by meaning, get AI-grounded answers — all from your OpenClaw agent.</p>
+      <div class="hero-ctas">
+        <a href="#install" class="btn btn-primary">Install the skill →</a>
+        <a href="#dashboard" class="btn btn-ghost">See the dashboard</a>
+        <a class="kbhub-cta" onclick="showPage('kbhub')">🧠 Browse KBHub ↗</a>
+      </div>
+      <div class="hero-terminal">
+        <div class="terminal-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="terminal-title">openclaw · WhatsApp</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-comment"># You → OpenClaw (via WhatsApp)</span></div>
+          <div style="margin-top:10px"><span style="color:#888">You:</span> Remember this — our SLA is 99.9% uptime, 4hr response time for P1.</div>
+          <div style="margin-top:6px"><span style="color:var(--accent)">Claw:</span> <span class="t-out">✓ Saved to knowledge base (3 chunks, namespace: work)</span></div>
+          <div style="margin-top:16px"><span style="color:#888">You:</span> What's our P1 response time commitment?</div>
+          <div style="margin-top:6px"><span style="color:var(--accent)">Claw:</span> <span class="t-out">Based on your KB: 4-hour response for P1 incidents,</span></div>
+          <div><span style="color:var(--accent)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><span class="t-out">99.9% uptime guarantee. [<span style="color:var(--accent2)">source: SLA doc</span>]</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Capabilities -->
+  <section id="features" class="hp-section">
+    <div class="reveal">
+      <div class="section-label">✦ capabilities</div>
+      <h2>Give your agent<br>knowledge superpowers.</h2>
+      <p class="section-sub">KBHub is the marketplace for agent knowledge. Discover, clone, and share curated knowledge bases — ready for your OpenClaw agent.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-card"><span class="feature-icon">🔍</span><h3>Discover Knowledge Bases</h3><p>Browse hundreds of curated, community-built knowledge bases across every domain — legal, medical, DevOps, finance, research, and more.</p><span class="feature-tag" style="cursor:pointer" onclick="showPage('kbhub')">Browse KBHub →</span></div>
+      <div class="feature-card"><span class="feature-icon">⎘</span><h3>One-Click Clone</h3><p>Found a KB your agent needs? Clone it in one click. All documents, chunks, and embeddings are imported into your instance instantly.</p><span class="feature-tag">clone · import · sync</span></div>
+      <div class="feature-card"><span class="feature-icon">🚀</span><h3>Publish &amp; Share</h3><p>Built a great knowledge base? Publish it to KBHub for the community. Set it public, unlisted, or private — you're in full control.</p><span class="feature-tag">public · unlisted · private</span></div>
+      <div class="feature-card"><span class="feature-icon">💬</span><h3>Agent-Native Import</h3><p>Your agent can import KBs directly from chat. Just say <code style="color:var(--accent2)">"import kb: sre-runbooks"</code> on WhatsApp or Telegram and it's done.</p><span class="feature-tag">WhatsApp · Telegram · CLI</span></div>
+      <div class="feature-card"><span class="feature-icon">🏷️</span><h3>Category Marketplace</h3><p>Filter by domain, sort by popularity, stars, or recency. Staff picks and verified publishers help you find the best KBs fast.</p><span class="feature-tag">10+ categories</span></div>
+      <div class="feature-card"><span class="feature-icon">🔄</span><h3>Auto-Updating KBs</h3><p>Some KBs stay fresh automatically — ArXiv digests, HN archives, and more update on schedule so your agent never has stale knowledge.</p><span class="feature-tag">auto-sync · weekly</span></div>
+      <div class="feature-card"><span class="feature-icon">🗂️</span><h3>Namespace Isolation</h3><p>Every cloned KB gets its own namespace. No conflicts, no bleed-through. Your agent queries exactly the domain it needs.</p><span class="feature-tag">per-kb namespace</span></div>
+      <div class="feature-card"><span class="feature-icon">⭐</span><h3>Community Curated</h3><p>Star your favorites, leave reviews, and follow publishers. Trending and staff-picked KBs surface the highest quality knowledge.</p><span class="feature-tag">stars · reviews · trending</span></div>
+      <div class="feature-card"><span class="feature-icon">🦞</span><h3>OpenClaw Native</h3><p>KBHub is built for the OpenClaw skill system. Drop in the <code style="color:var(--accent2)">SKILL.md</code> and your agent knows how to search, ingest, and answer from any KB.</p><span class="feature-tag">AgentSkills · SKILL.md</span></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- KBHub Preview -->
+  <section id="dashboard" class="hp-section">
+    <div class="reveal">
+      <div class="section-label">✦ kbhub</div>
+      <h2>A marketplace for<br>agent knowledge.</h2>
+      <p class="section-sub">Curated knowledge bases across every domain, ready to clone into your agent with one click.</p>
+    </div>
+
+    <div class="dashboard-wrap reveal" style="cursor:default">
+
+      <!-- topbar -->
+      <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:52px;display:flex;align-items:center;gap:16px">
+        <div style="display:flex;align-items:center;gap:8px;font-family:'Clash Display',sans-serif;font-weight:600;font-size:14px;letter-spacing:-0.02em">
+          <div style="width:26px;height:26px;border-radius:6px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 12px rgba(255,92,0,0.35)">🦞</div>
+          KB<span style="color:var(--accent)">Hub</span>
+        </div>
+        <div style="display:flex;gap:2px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;margin-left:12px">
+          <div style="padding:5px 16px;border-radius:6px;font-size:12px;font-weight:500;color:var(--text);background:var(--surface2);font-family:'DM Sans',sans-serif">All KBs</div>
+          <div style="padding:5px 16px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);font-family:'DM Sans',sans-serif">Trending</div>
+          <div style="padding:5px 16px;border-radius:6px;font-size:12px;font-weight:500;color:var(--muted);font-family:'DM Sans',sans-serif">Staff Picks</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;font-family:'DM Mono',monospace;font-size:11px;color:var(--green)"><div class="status-dot"></div>247 knowledge bases</div>
+      </div>
+
+      <!-- body: sidebar + main -->
+      <div style="display:grid;grid-template-columns:200px 1fr;min-height:440px;background:var(--bg)">
+
+        <!-- mock sidebar -->
+        <div style="background:var(--surface);border-right:1px solid var(--border);padding:16px 0">
+          <div style="padding:10px 14px">
+            <div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+              <span style="color:var(--muted);font-size:14px">⌕</span>
+              <span style="font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted)">Search KBs…</span>
+            </div>
+          </div>
+          <div style="padding:14px 14px 4px"><div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;padding:0 8px;margin-bottom:6px">Discover</div>
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:12px;background:var(--accent-dim);color:var(--accent2);margin-bottom:2px"><span style="font-size:13px">◉</span> All KBs <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;background:var(--surface2);padding:2px 7px;border-radius:10px;color:var(--muted)">247</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:12px;color:var(--text2);margin-bottom:2px"><span style="font-size:13px">↑</span> Trending <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;background:var(--surface2);padding:2px 7px;border-radius:10px;color:var(--muted)">24</span></div>
+            <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:12px;color:var(--text2);margin-bottom:2px"><span style="font-size:13px">★</span> Staff Picks <span style="margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;background:var(--surface2);padding:2px 7px;border-radius:10px;color:var(--muted)">8</span></div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:10px 14px">
+          <div style="padding:6px 14px 4px"><div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;padding:0 8px;margin-bottom:8px">Categories</div></div>
+          <div style="padding:0 18px;display:flex;flex-wrap:wrap;gap:5px">
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid rgba(255,92,0,0.25);background:var(--accent-dim);font-size:10px;font-family:'DM Mono',monospace;color:var(--accent2)">All</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">Research</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">Legal</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">Medical</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">DevOps</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">Finance</span>
+            <span style="padding:3px 9px;border-radius:5px;border:1px solid var(--border);font-size:10px;font-family:'DM Mono',monospace;color:var(--text2);background:var(--surface2)">Science</span>
+          </div>
+        </div>
+
+        <!-- mock main area -->
+        <div style="overflow:hidden">
+          <!-- featured banner -->
+          <div style="padding:20px 28px;background:linear-gradient(135deg,#1a1200 0%,#0f0c00 50%,#0c0b09 100%);border-bottom:1px solid var(--border);position:relative;overflow:hidden">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:6px">★ Staff Picks this week</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(240,192,64,0.12);border-radius:10px;padding:16px 18px">
+                <div style="width:32px;height:32px;border-radius:7px;background:rgba(91,156,246,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px">🔬</div>
+                <div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em;margin-bottom:3px">ArXiv Research Digest</div>
+                <div style="font-size:11px;color:var(--text2);line-height:1.5;font-weight:300">10,000+ AI & ML paper abstracts</div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-size:11px">★</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">4.9 · 2.1k clones</span></div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(240,192,64,0.12);border-radius:10px;padding:16px 18px">
+                <div style="width:32px;height:32px;border-radius:7px;background:rgba(61,220,132,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px">⚖️</div>
+                <div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em;margin-bottom:3px">US Contract Law Primer</div>
+                <div style="font-size:11px;color:var(--text2);line-height:1.5;font-weight:300">Plain-English contract clauses & law</div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-size:11px">★</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">4.8 · 1.8k clones</span></div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(240,192,64,0.12);border-radius:10px;padding:16px 18px">
+                <div style="width:32px;height:32px;border-radius:7px;background:rgba(255,92,0,0.15);display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:8px">🔥</div>
+                <div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em;margin-bottom:3px">SRE Runbook Library</div>
+                <div style="font-size:11px;color:var(--text2);line-height:1.5;font-weight:300">Incident runbooks & on-call playbooks</div>
+                <div style="margin-top:10px;display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-size:11px">★</span><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">4.9 · 3.4k clones</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- filter bar -->
+          <div style="padding:10px 28px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);background:var(--surface)">
+            <div style="display:flex;gap:2px;background:var(--bg);border-radius:8px;padding:3px;border:1px solid var(--border)">
+              <div style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:500;color:var(--text);background:var(--surface2);font-family:'DM Sans',sans-serif">🔥 Popular</div>
+              <div style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:500;color:var(--muted);font-family:'DM Sans',sans-serif">✦ Newest</div>
+              <div style="padding:4px 12px;border-radius:6px;font-size:11px;font-weight:500;color:var(--muted);font-family:'DM Sans',sans-serif">⎘ Most Cloned</div>
+            </div>
+            <div style="margin-left:auto;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">247 knowledge bases</div>
+          </div>
+
+          <!-- kb cards -->
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border)">
+            <div style="background:var(--bg);padding:18px 20px">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:8px;background:rgba(91,156,246,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔬</div>
+                <div style="min-width:0"><div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em">ArXiv Research Digest</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px">by <span style="color:var(--accent2)">@researchbot</span> · Research</div></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;font-weight:300">AI, ML, and CS paper abstracts from ArXiv. Weekly updates.</div>
+              <div style="display:flex;gap:4px;margin-bottom:10px"><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">research</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">ai</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">ml</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">★ <span style="color:var(--text2)">4.9</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">⎘ <span style="color:var(--text2)">2.1k</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">📄 <span style="color:var(--text2)">10.8k</span></span><span style="margin-left:auto;padding:4px 10px;border-radius:5px;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif">⎘ Clone</span></div>
+            </div>
+            <div style="background:var(--bg);padding:18px 20px">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,92,0,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔥</div>
+                <div style="min-width:0"><div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em">SRE Runbook Library</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px">by <span style="color:var(--accent2)">@sre_collective</span> · DevOps</div></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;font-weight:300">Incident runbooks, postmortems, and on-call playbooks.</div>
+              <div style="display:flex;gap:4px;margin-bottom:10px"><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">devops</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">sre</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">k8s</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">★ <span style="color:var(--text2)">4.9</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">⎘ <span style="color:var(--text2)">3.4k</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">📄 <span style="color:var(--text2)">523</span></span><span style="margin-left:auto;padding:4px 10px;border-radius:5px;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif">⎘ Clone</span></div>
+            </div>
+            <div style="background:var(--bg);padding:18px 20px">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:8px;background:rgba(244,114,182,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💊</div>
+                <div style="min-width:0"><div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em">Drug Interaction Reference</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px">by <span style="color:var(--accent2)">@pharma_ai</span> · Medical</div></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;font-weight:300">FDA-sourced interaction data for 3,200+ medications.</div>
+              <div style="display:flex;gap:4px;margin-bottom:10px"><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">medical</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">drugs</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">fda</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">★ <span style="color:var(--text2)">4.7</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">⎘ <span style="color:var(--text2)">892</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">📄 <span style="color:var(--text2)">3.2k</span></span><span style="margin-left:auto;padding:4px 10px;border-radius:5px;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif">⎘ Clone</span></div>
+            </div>
+            <div style="background:var(--bg);padding:18px 20px">
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:8px;background:rgba(240,192,64,0.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🚀</div>
+                <div style="min-width:0"><div style="font-family:'Clash Display',sans-serif;font-weight:500;font-size:13px;letter-spacing:-0.01em">YC Startup Playbook</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:1px">by <span style="color:var(--accent2)">@yc_digest</span> · Finance</div></div>
+              </div>
+              <div style="font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:10px;font-weight:300">Distilled YC wisdom, PG essays, and startup lectures.</div>
+              <div style="display:flex;gap:4px;margin-bottom:10px"><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">startup</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">vc</span><span style="padding:2px 7px;border-radius:4px;font-size:9px;font-family:'DM Mono',monospace;border:1px solid var(--border);color:var(--text2);background:var(--surface2)">product</span></div>
+              <div style="display:flex;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--border)"><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">★ <span style="color:var(--text2)">4.9</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">⎘ <span style="color:var(--text2)">2.9k</span></span><span style="font-size:10px;color:var(--muted);font-family:'DM Mono',monospace">📄 <span style="color:var(--text2)">412</span></span><span style="margin-left:auto;padding:4px 10px;border-radius:5px;font-size:11px;background:var(--surface2);border:1px solid var(--border);color:var(--text2);font-family:'DM Sans',sans-serif">⎘ Clone</span></div>
+            </div>
+          </div>
+
+          <!-- fade overlay -->
+          <div style="background:linear-gradient(0deg,var(--bg) 40%,transparent 100%);position:relative;margin-top:-60px;padding:60px 28px 20px;text-align:center">
+            <span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:0.05em">✦ PREVIEW — visit KBHub from the nav to explore</span>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /dashboard-wrap -->
+  </section>
+
+  <hr class="divider">
+
+  <!-- Install -->
+  <section id="install" class="hp-section">
+    <div class="reveal">
+      <div class="section-label">✦ get started</div>
+      <h2>Up in three steps.</h2>
+      <p class="section-sub">Deploy the server, drop the skill, configure your agent. Done in under five minutes.</p>
+    </div>
+    <div class="install-steps reveal">
+      <div class="step-card"><span class="step-num">1</span><h3>Deploy the Server</h3><p>Copy the env file and add your API keys. The Pinecone index is created automatically on first startup.</p><div class="code-snippet"><span style="color:var(--muted)">$ </span><span style="color:var(--accent2)">cp</span> .env.example .env<br><span style="color:var(--muted)"># Add OPENAI_API_KEY, PINECONE_API_KEY</span><br><span style="color:var(--muted)"># Add SUPABASE_URL, SUPABASE_ANON_KEY</span><br><span style="color:var(--muted)">$ </span><span style="color:var(--accent2)">docker-compose up</span></div></div>
+      <div class="step-card"><span class="step-num">2</span><h3>Set Up KBHub</h3><p>Create a <a href="https://supabase.com" target="_blank" style="color:var(--accent2)">Supabase</a> project, run <code style="color:var(--accent2)">supabase/setup.sql</code> in the SQL Editor, and create a <code style="color:var(--accent2)">kb-bundles</code> storage bucket (public read).</p><div class="code-snippet"><span style="color:var(--muted)">Dashboard → SQL Editor →</span><br><span style="color:var(--accent2)">paste</span> supabase/setup.sql<br><span style="color:var(--muted)">Dashboard → Storage →</span><br><span style="color:var(--accent2)">New bucket:</span> kb-bundles <span style="color:var(--green)">(public)</span></div></div>
+      <div class="step-card"><span class="step-num">3</span><h3>Connect Your Agent</h3><p>Install the <code style="color:var(--accent2)">skill/</code> folder into your OpenClaw skills directory and set <code style="color:var(--accent2)">KB_API_URL</code> in your agent config.</p><div class="code-snippet"><span style="color:var(--muted)">$ </span><span style="color:var(--accent2)">cp</span> -r skill/ ~/.openclaw/skills/kb/<br><br><span style="color:var(--muted2)">{</span> <span style="color:var(--blue)">"skills"</span>: { <span style="color:var(--blue)">"knowledge-base"</span>: {<br>&nbsp;&nbsp;<span style="color:var(--blue)">"env"</span>: {<br>&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:var(--blue)">"KB_API_URL"</span>: <span style="color:var(--accent2)">"http://localhost:8000"</span><br>&nbsp;&nbsp;}<br>}}}</div></div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <footer>
+    <div class="logo" onclick="showPage('home')" style="cursor:pointer">
+      <span class="logo-crab">🦞</span> OpenClaw <span style="color:var(--accent)">KB</span>
+    </div>
+    <ul class="footer-links">
+      <li><a href="https://openclaw.ai" target="_blank">OpenClaw</a></li>
+      <li><a href="https://docs.openclaw.ai/skills" target="_blank">Skills docs</a></li>
+      <li><a onclick="showPage('kbhub')" style="cursor:pointer">KBHub</a></li>
+      <li><a href="/docs" target="_blank">API Docs</a></li>
+    </ul>
+    <div class="footer-copy">Built for OpenClaw agents · MIT License</div>
+  </footer>
+
+</div><!-- /page-home -->
+
+
+<!-- ═══════════════ PAGE 2 — KBHUB ═══════════════ -->
+<div class="page" id="page-kbhub">
+  <div class="kbhub-wrap">
+
+    <aside class="kbhub-sidebar">
+      <div class="sb-logo">
+        <div class="sb-logo-mark">🦞</div>
+        <div class="sb-logo-text">KB<span>Hub</span></div>
+        <div class="sb-badge">beta</div>
+      </div>
+      <div class="sb-search">
+        <span style="color:var(--muted);font-size:14px">⌕</span>
+        <input type="text" placeholder="Search knowledge bases..." oninput="filterKBs(this.value)">
+      </div>
+      <div class="sb-section">
+        <div class="sb-section-label">Discover</div>
+        <div class="sb-item active" onclick="setKBNav(this,'all')"><span class="sb-icon">◉</span> All KBs <span class="sb-count" id="sbCountAll">0</span></div>
+        <div class="sb-item" onclick="setKBNav(this,'trending')"><span class="sb-icon">↑</span> Trending</div>
+        <div class="sb-item" onclick="setKBNav(this,'new')"><span class="sb-icon">✦</span> New Releases</div>
+        <div class="sb-item" onclick="setKBNav(this,'top-rated')"><span class="sb-icon">★</span> Top Rated</div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section">
+        <div class="sb-section-label">My Library</div>
+        <div class="sb-item" onclick="setKBNav(this,'my-kbs')"><span class="sb-icon">🧠</span> My KBs <span class="sb-count" id="sbCountMyKBs">0</span></div>
+        <div class="sb-item" onclick="setKBNav(this,'my-clones')"><span class="sb-icon">⎘</span> Cloned <span class="sb-count" id="sbCountClones">0</span></div>
+        <div class="sb-item" onclick="setKBNav(this,'starred')"><span class="sb-icon">♡</span> Starred <span class="sb-count" id="sbCountStarred">0</span></div>
+      </div>
+      <div class="sb-divider"></div>
+      <div class="sb-section"><div class="sb-section-label">Categories</div></div>
+      <div class="cat-tags">
+        <span class="cat-tag active" onclick="toggleCat(this)">All</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Research</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Legal</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Medical</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Tech</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Finance</span>
+        <span class="cat-tag" onclick="toggleCat(this)">HR</span>
+        <span class="cat-tag" onclick="toggleCat(this)">DevOps</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Science</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Sales</span>
+        <span class="cat-tag" onclick="toggleCat(this)">Personal</span>
+      </div>
+
+    </aside>
+
+    <main class="kbhub-main">
+      <div class="kbhub-topbar">
+        <div>
+          <div class="kbhub-topbar-title">Knowledge Base Hub</div>
+          <div class="kbhub-topbar-sub">Discover and share knowledge bases for your OpenClaw agent</div>
+        </div>
+        <div class="kbhub-topbar-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openImportModal()">⭳ Import KB</button>
+          <button class="btn btn-primary btn-sm" onclick="openPublishModal()">+ Publish KB</button>
+        </div>
+      </div>
+
+      <div class="featured-banner" id="featuredBanner" style="display:none">
+        <div class="featured-label">Top Knowledge Bases</div>
+        <div class="featured-cards" id="featuredCards"></div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="sort-tabs">
+          <div class="sort-tab active" onclick="setSort(this,'popular')">🔥 Popular</div>
+          <div class="sort-tab" onclick="setSort(this,'new')">✦ Newest</div>
+          <div class="sort-tab" onclick="setSort(this,'updated')">↻ Updated</div>
+          <div class="sort-tab" onclick="setSort(this,'clones')">⎘ Most Cloned</div>
+        </div>
+        <div class="filter-chip" onclick="this.classList.toggle('on')">🌐 Public only</div>
+        <div class="filter-chip" onclick="this.classList.toggle('on')">✓ Verified</div>
+        <div class="filter-chip" onclick="this.classList.toggle('on')">↻ Auto-updated</div>
+        <div class="result-count" id="resultCount">0 knowledge bases</div>
+      </div>
+
+      <div class="kb-grid" id="kbGrid"></div>
+    </main>
+  </div>
+</div><!-- /page-kbhub -->
+
+<!-- ── PAGE: MY KBs ── -->
+<div class="page" id="page-my-kbs">
+  <div style="padding:26px 32px 32px">
+    <div class="kbhub-topbar-title">My Knowledge Bases</div>
+    <div class="kbhub-topbar-sub" id="myKbsResultCount" style="margin-top:6px">Loading…</div>
+    <div class="kb-grid" id="myKbsGrid" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- ── PAGE: MY CLONES ── -->
+<div class="page" id="page-my-clones">
+  <div style="padding:26px 32px 32px">
+    <div class="kbhub-topbar-title">My Cloned Knowledge Bases</div>
+    <div class="kbhub-topbar-sub" id="myClonesResultCount" style="margin-top:6px">Loading…</div>
+    <div class="kb-grid" id="myClonesGrid" style="margin-top:18px"></div>
+  </div>
+</div>
+
+<!-- ── PAGE: ACCOUNT ── -->
+<div class="page" id="page-account">
+  <div style="padding:26px 32px 32px">
+    <div class="kbhub-topbar-title">Account</div>
+    <div class="kbhub-topbar-sub" style="margin-top:6px">Your profile details</div>
+    <div class="review-item" style="margin-top:18px; max-width:720px">
+      <div style="display:flex; align-items:center; gap:14px">
+        <div class="avatar" id="accountAvatar" style="width:46px; height:46px; border-radius:12px"></div>
+        <div style="flex:1; min-width:0">
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Display name</label>
+            <input type="text" class="form-input" id="accountEditDisplayName" placeholder="Your display name" />
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Handle <span style="font-size:12px;color:var(--muted)">🔒</span></label>
+            <input type="text" class="form-input" id="accountHandle" disabled style="font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface2)" />
+          </div>
+          <div class="form-group" style="margin-bottom:10px">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="accountEditEmail" placeholder="you@example.com" />
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">New password</label>
+            <input type="password" class="form-input" id="accountEditPassword" placeholder="Leave blank to keep current" />
+          </div>
+        </div>
+      </div>
+      <div class="auth-msg" id="accountPageMsg"></div>
+      <div class="m-section" style="margin-top:18px">Seller Payments</div>
+      <div id="stripeConnectSection">
+        <div id="stripeNotConnected" style="display:flex; flex-direction:column; gap:8px">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button class="btn btn-ghost btn-sm" id="stripeConnectBtn" onclick="connectStripe()">💳 Connect Stripe</button>
+            <span class="auth-msg" id="stripeConnectMsg" style="margin:0">Connect Stripe to receive payouts for paid KBs</span>
+          </div>
+          <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:0;max-width:520px">If the Stripe page loads inside an editor preview, open this site in <strong>Chrome or Edge</strong> instead — embedded browsers often block Connect and test cards.</p>
+        </div>
+        <div id="stripeConnected" style="display:none">
+          <p style="font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 10px;max-width:560px">Totals below match your database after syncing with Stripe. If a sale shows paid in Stripe but still “Pending” here, open Account again or click Refresh — we reconcile automatically.</p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(108px,1fr)); gap:10px; margin-bottom:14px" id="earningsGrid">
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--text); font-family:'Clash Display',sans-serif" id="earningsGross">$0.00</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Gross sales</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">Buyer paid</div></div>
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--accent); font-family:'Clash Display',sans-serif" id="earningsNet">$0.00</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Your net</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">After 5% fee</div></div>
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--muted); font-family:'Clash Display',sans-serif" id="earningsFees">$0.00</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Platform fees</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">5% per sale</div></div>
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--text); font-family:'Clash Display',sans-serif" id="earningsSales">0</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Completed</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">Paid sales</div></div>
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--gold); font-family:'Clash Display',sans-serif" id="earningsPending">0</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Pending</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">Unpaid / open</div></div>
+            <div class="review-item" style="padding:12px; text-align:center"><div style="font-size:18px; font-weight:600; color:var(--muted); font-family:'Clash Display',sans-serif" id="earningsRefunded">0</div><div style="font-size:10px; color:var(--muted); margin-top:2px">Refunded</div><div style="font-size:9px;color:var(--muted2);margin-top:2px">If any</div></div>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+            <button class="btn btn-primary btn-sm" onclick="openStripeDashboard()">📊 Stripe Dashboard</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadSellerEarnings()">↻ Refresh</button>
+            <span style="font-size:12px; color:var(--muted)">✓ Stripe Connected — payouts are automatic</span>
+          </div>
+        </div>
+      </div>
+      <div class="m-section" style="margin-top:18px">Actions</div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center">
+        <button class="btn btn-ghost btn-sm" onclick="signOut()">↪ Sign out</button>
+        <button class="btn btn-primary btn-sm" onclick="submitAccountUpdates()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── KB DETAIL MODAL ── -->
+<div class="modal-overlay" id="kbModal" onclick="if(event.target===this)closeModalById('kbModal')">
+  <div class="modal">
+    <div class="modal-hd" id="modalHd"></div>
+    <div class="modal-bd" id="modalBd"></div>
+    <div class="modal-ft" id="modalFt"></div>
+  </div>
+</div>
+
+<!-- ── PUBLISH MODAL ── -->
+<div class="modal-overlay" id="publishModal" onclick="if(event.target===this)closeModalById('publishModal')">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hd" style="padding:24px 28px 0">
+      <div><div class="modal-title">Publish a Knowledge Base</div><div class="modal-sub">Share your KB with the OpenClaw community</div></div>
+      <button class="modal-close" onclick="closeModalById('publishModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="form-group"><label class="form-label">Icon</label><div class="icon-picker"><div class="icon-opt selected" onclick="selectIcon(this)">🧠</div><div class="icon-opt" onclick="selectIcon(this)">📚</div><div class="icon-opt" onclick="selectIcon(this)">🔬</div><div class="icon-opt" onclick="selectIcon(this)">⚖️</div><div class="icon-opt" onclick="selectIcon(this)">💊</div><div class="icon-opt" onclick="selectIcon(this)">🔥</div><div class="icon-opt" onclick="selectIcon(this)">🌐</div><div class="icon-opt" onclick="selectIcon(this)">💹</div><div class="icon-opt" onclick="selectIcon(this)">🧪</div><div class="icon-opt" onclick="selectIcon(this)">🛠️</div><div class="icon-opt" onclick="selectIcon(this)">🎓</div><div class="icon-opt" onclick="selectIcon(this)">🏗️</div></div></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">KB Name</label><input type="text" class="form-input" placeholder="e.g. My Research Digest" id="pubName"></div><div class="form-group"><label class="form-label">Slug</label><input type="text" class="form-input" placeholder="my-research-digest" id="pubSlug" style="font-family:'DM Mono',monospace;font-size:12px"></div></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" placeholder="What's in this knowledge base? Who is it useful for?"></textarea></div>
+
+      <div class="form-group">
+        <label class="form-label">Content <span style="font-size:12px;color:var(--muted);font-weight:400">— add text, files, or URLs</span></label>
+        <div class="pub-content-list" id="pubContentList"><div class="pub-empty">No content added yet. Add at least one item below.</div></div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" type="button" onclick="pubShowAddPanel('text')">📝 Add Text</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="document.getElementById('pubFileInput').click()">📄 Add File</button>
+          <button class="btn btn-ghost btn-sm" type="button" onclick="pubShowAddPanel('url')">🌐 Add URL</button>
+          <input type="file" id="pubFileInput" accept=".txt,.md,.pdf" multiple style="display:none" onchange="pubHandleFiles(this.files)">
+        </div>
+        <div id="pubAddPanel" style="display:none;margin-top:10px">
+          <div id="pubAddText" style="display:none">
+            <input type="text" class="form-input" id="pubTextTitle" placeholder="Title (optional)" style="margin-bottom:6px;font-size:12px">
+            <textarea class="form-input" id="pubTextContent" placeholder="Paste or type your content here..." style="min-height:80px;font-size:12px"></textarea>
+            <div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-primary btn-sm" type="button" onclick="pubAddTextItem()">Add</button><button class="btn btn-ghost btn-sm" type="button" onclick="pubHideAddPanel()">Cancel</button></div>
+          </div>
+          <div id="pubAddUrl" style="display:none">
+            <input type="text" class="form-input" id="pubUrlInput" placeholder="https://example.com/article" style="font-size:12px;font-family:'DM Mono',monospace">
+            <div style="display:flex;gap:6px;margin-top:6px"><button class="btn btn-primary btn-sm" type="button" onclick="pubAddUrlItem()">Add</button><button class="btn btn-ghost btn-sm" type="button" onclick="pubHideAddPanel()">Cancel</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group"><label class="form-label">Tags (comma separated)</label><input type="text" class="form-input" placeholder="research, ai, papers, ml"></div>
+      <div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-input" style="cursor:pointer"><option>Research</option><option>Legal</option><option>Medical</option><option>Tech</option><option>Finance</option><option>HR</option><option>DevOps</option><option>Science</option><option>Sales</option><option>Support</option><option>Personal</option></select></div><div class="form-group"><label class="form-label">Visibility</label><div class="radio-group"><div class="radio-option selected" onclick="selectRadio(this)">🌐 Public</div><div class="radio-option" onclick="selectRadio(this)">🔗 Unlisted</div><div class="radio-option" onclick="selectRadio(this)">🔒 Private</div></div></div></div>
+      <div class="form-group"><label class="form-label">Clone permissions</label><div class="radio-group"><div class="radio-option selected" onclick="selectRadio(this)">Anyone</div><div class="radio-option" onclick="selectRadio(this)">Logged-in users</div><div class="radio-option" onclick="selectRadio(this)">No cloning</div></div></div>
+      <div class="form-group"><label class="form-label">Price (USD) — leave 0 for free</label><input type="number" class="form-input" id="pubPrice" min="0" step="0.01" value="0" style="font-family:'DM Mono',monospace;font-size:13px;max-width:160px"></div>
+    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" style="flex:1" onclick="closeModalById('publishModal')">Cancel</button><button class="btn btn-primary" style="flex:2" onclick="publishKB()">🚀 Publish Knowledge Base</button></div>
+  </div>
+</div>
+
+<!-- ── IMPORT MODAL ── -->
+<div class="modal-overlay" id="importModal" onclick="if(event.target===this)closeModalById('importModal')">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-hd" style="padding:24px 28px 0">
+      <div><div class="modal-title">Import from KBHub</div><div class="modal-sub">Add a shared KB to your local OpenClaw instance</div></div>
+      <button class="modal-close" onclick="closeModalById('importModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="form-group"><label class="form-label">KBHub URL or slug</label><input id="importSlug" type="text" class="form-input" placeholder="kbhub.ai/kb/arxiv-digest" style="font-family:'DM Mono',monospace;font-size:13px"></div>
+      <div class="form-group"><label class="form-label">Import to namespace <span style="font-weight:400;color:var(--muted)">(optional override)</span></label><input id="importNs" type="text" class="form-input" placeholder="default" style="font-family:'DM Mono',monospace;font-size:12px"></div>
+      <div class="clone-box"><div class="m-section">Or run from CLI</div><div class="clone-cmd"><span>$ openclaw kb import arxiv-digest</span><button class="copy-btn" onclick="copyText('openclaw kb import arxiv-digest')">copy</button></div></div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.6">Or tell your agent: <span style="color:var(--accent2);font-family:'DM Mono',monospace">"import kb: arxiv-digest"</span></p>
+    </div>
+    <div class="modal-ft"><button class="btn btn-ghost" style="flex:1" onclick="closeModalById('importModal')">Cancel</button><button class="btn btn-primary" style="flex:2" onclick="importKB()">⭳ Import KB</button></div>
+  </div>
+</div>
+
+<!-- ── AUTH MODAL ── -->
+<div class="modal-overlay" id="authModal" onclick="if(event.target===this)closeModalById('authModal')">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-hd" style="padding:24px 28px 0">
+      <div><div class="modal-title">Welcome to KBHub</div><div class="modal-sub">Sign in to publish, clone, star, and review</div></div>
+      <button class="modal-close" onclick="closeModalById('authModal')">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="auth-msg" id="authMsg"></div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+        <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+      </div>
+      <div class="auth-panel active" id="authLogin">
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="loginEmail" placeholder="you@example.com"></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="loginPassword" placeholder="••••••••"></div>
+      </div>
+      <div class="auth-panel" id="authRegister">
+        <div class="form-group"><label class="form-label">Display Name</label><input type="text" class="form-input" id="regName" placeholder="Jamie Davis"></div>
+        <div class="form-group"><label class="form-label">Handle</label><input type="text" class="form-input" id="regHandle" placeholder="jamied" style="font-family:'DM Mono',monospace;font-size:12px"></div>
+        <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-input" id="regEmail" placeholder="you@example.com"></div>
+        <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="regPassword" placeholder="••••••••"></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModalById('authModal')">Cancel</button>
+      <button class="btn btn-primary" style="flex:2" id="authSubmitBtn" onclick="submitAuth()">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg">Done!</span></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const API_BASE = (() => {
+  const loc = window.location;
+  if (loc.port === '8000') return loc.origin;
+  if (loc.protocol === 'file:') return 'http://localhost:8000';
+  return loc.origin;
+})();
+
+let sb = null;
+
+// ── API HELPERS ───────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  let res;
+  try {
+    res = await fetch(`${API_BASE}${path}`, opts);
+  } catch (e) {
+    throw new Error(`Cannot reach API at ${API_BASE} — ${e.message}. Start the server (uvicorn) or fix API_BASE.`);
+  }
+  const raw = await res.text();
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText || 'Error'}`;
+    if (raw) {
+      try {
+        const err = JSON.parse(raw);
+        detail = err.detail;
+        if (Array.isArray(detail)) {
+          detail = detail.map((x) => (typeof x === 'object' && x.msg) ? x.msg : String(x)).join(' ');
+        }
+        if (typeof detail === 'object' && detail !== null) detail = JSON.stringify(detail);
+        detail = (detail != null && String(detail).trim()) ? String(detail) : raw.slice(0, 600);
+      } catch {
+        const stripped = raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        detail = stripped.slice(0, 600) || detail;
+      }
+    }
+    console.warn(`API ${method} ${path} →`, res.status, detail);
+    throw new Error(detail);
+  }
+  if (!raw || !raw.trim()) return {};
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return raw;
+  }
+}
+const apiGet    = (path) => api('GET', path);
+const apiPost   = (path, body) => api('POST', path, body);
+const apiDelete = (path) => api('DELETE', path);
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let apiConnected = false;
+let currentUser = null;
+let currentProfile = null;
+let userStars = new Set();
+
+// ── PAGE ROUTING ──────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const homeLink = document.getElementById('btn-home');
+  const kbhubBtn = document.getElementById('btn-kbhub');
+  if (homeLink) homeLink.classList.toggle('active', name === 'home');
+  if (kbhubBtn) kbhubBtn.classList.toggle('active', name === 'kbhub');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'home') initReveal();
+  if (name === 'kbhub') { if (!catalogLoaded) loadCatalog(); else { renderGrid(kbData); renderFeatured(); updateSidebarCounts(); } loadMyKBs(); }
+  if (name === 'my-kbs') { loadMyPublishedKBs(); }
+  if (name === 'my-clones') { loadMyClonedKBs(); }
+  if (name === 'account') { loadAccountPage(); }
+  window.location.hash = name === 'home' ? '' : name;
+}
+
+// ── HOME LOGIC ────────────────────────────────────────────────────────────
+function initReveal() {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('#page-home .reveal').forEach(r => obs.observe(r));
+}
+initReveal();
+
+// ── HEALTH CHECK ──────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const data = await apiGet('/health');
+    apiConnected = data.status === 'ok';
+  } catch {
+    apiConnected = false;
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function escHtml(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function escAttr(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+
+function getColorClass(category) {
+  const map = { Research:'c-blue', Legal:'c-green', Medical:'c-pink', Tech:'c-orange', Finance:'c-gold', DevOps:'c-orange', Science:'c-purple', Sales:'c-green', HR:'c-pink', Personal:'c-gold', Support:'c-blue' };
+  return map[category] || 'c-blue';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return 'recently';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  if (days < 30) return `${Math.floor(days/7)}w ago`;
+  return `${Math.floor(days/30)}mo ago`;
+}
+
+function fmtNum(n) { return n >= 1000 ? (n/1000).toFixed(1)+'k' : String(n); }
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+let authMode = 'login';
+
+function switchAuthTab(mode) {
+  authMode = mode;
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-panel').forEach(p => p.classList.remove('active'));
+  if (mode === 'login') {
+    document.querySelectorAll('.auth-tab')[0].classList.add('active');
+    document.getElementById('authLogin').classList.add('active');
+    document.getElementById('authSubmitBtn').textContent = 'Sign In';
+  } else {
+    document.querySelectorAll('.auth-tab')[1].classList.add('active');
+    document.getElementById('authRegister').classList.add('active');
+    document.getElementById('authSubmitBtn').textContent = 'Create Account';
+  }
+  document.getElementById('authMsg').className = 'auth-msg';
+}
+
+function showAuthMsg(text, type) {
+  const el = document.getElementById('authMsg');
+  el.textContent = text;
+  el.className = `auth-msg ${type}`;
+}
+
+async function submitAuth() {
+  if (!sb) { showToast('Supabase not configured. Set URL and key in Settings.', '⚠'); return; }
+  const btn = document.getElementById('authSubmitBtn');
+  btn.disabled = true;
+
+  try {
+    if (authMode === 'login') {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) { showAuthMsg('Email and password required.', 'error'); return; }
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      currentUser = data.user;
+    } else {
+      const name = document.getElementById('regName').value.trim();
+      const handle = document.getElementById('regHandle').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      if (!name || !handle || !email || !password) { showAuthMsg('All fields required.', 'error'); return; }
+      const { data, error } = await sb.auth.signUp({
+        email, password,
+        options: { data: { display_name: name, handle } }
+      });
+      if (error) throw error;
+      currentUser = data.user;
+    }
+    await loadProfile();
+    closeModalById('authModal');
+    updateAuthUI();
+    showToast(`Signed in as ${currentProfile?.handle || currentUser.email}`, '✓');
+    loadCatalog();
+  } catch (e) {
+    showAuthMsg(e.message || 'Auth failed', 'error');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function signOut() {
+  if (sb) await sb.auth.signOut();
+  currentUser = null;
+  currentProfile = null;
+  userStars = new Set();
+  updateAuthUI();
+  closeUserMenu();
+  showToast('Signed out', '↪');
+}
+
+async function loadProfile() {
+  if (!sb || !currentUser) return;
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (data) currentProfile = data;
+}
+
+async function loadUserStars() {
+  if (!sb || !currentUser) return;
+  const { data } = await sb.from('stars').select('kb_id').eq('user_id', currentUser.id);
+  userStars = new Set((data || []).map(s => s.kb_id));
+}
+
+function updateAuthUI() {
+  const trigger = document.getElementById('authTrigger');
+  const triggerLabel = document.getElementById('authTriggerLabel');
+  const navAvatar = document.getElementById('navAvatar');
+  const sName = document.getElementById('sidebarUserName');
+  const sHandle = document.getElementById('sidebarUserHandle');
+  const sAvatar = document.getElementById('sidebarAvatar');
+
+  if (currentUser && currentProfile) {
+    const initials = currentProfile.display_name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    trigger.classList.add('logged-in');
+    if (triggerLabel) triggerLabel.textContent = currentProfile.display_name;
+    document.getElementById('umName').textContent = currentProfile.display_name;
+    document.getElementById('umHandle').textContent = `@${currentProfile.handle}`;
+    if (navAvatar) navAvatar.textContent = initials;
+    if (sAvatar) sAvatar.textContent = initials;
+    if (sName) sName.textContent = currentProfile.display_name;
+    if (sHandle) sHandle.textContent = `@${currentProfile.handle}`;
+  } else {
+    trigger.classList.remove('logged-in');
+    if (triggerLabel) triggerLabel.textContent = 'Sign In';
+    if (navAvatar) navAvatar.textContent = '?';
+    if (sAvatar) sAvatar.textContent = '?';
+    if (sName) sName.textContent = 'Sign in';
+    if (sHandle) sHandle.textContent = 'to publish & clone KBs';
+  }
+}
+
+function onAuthTriggerClick() {
+  if (currentUser) {
+    const dd = document.getElementById('userMenuDropdown');
+    dd.classList.toggle('open');
+  } else {
+    document.getElementById('authModal').classList.add('open');
+  }
+}
+
+function closeUserMenu() { document.getElementById('userMenuDropdown').classList.remove('open'); }
+
+document.addEventListener('click', (e) => {
+  if (!document.getElementById('userMenu').contains(e.target)) closeUserMenu();
+});
+
+// ── KBHUB DATA ────────────────────────────────────────────────────────────
+let kbData = [];
+let activeKBData = [];
+let catalogLoaded = false;
+let userPurchases = new Set();
+
+async function loadUserPurchases() {
+  if (!sb || !currentUser) return;
+  try {
+    try {
+      await apiPost('/reconcile-kb-purchases', { user_id: currentUser.id });
+    } catch (e) { console.warn('reconcile-kb-purchases', e); }
+    const { data } = await sb.from('kb_purchases').select('kb_id').eq('buyer_id', currentUser.id).eq('status', 'completed');
+    userPurchases = new Set((data || []).map(p => p.kb_id));
+  } catch { /* ignore */ }
+}
+
+function mapKbRow(kb) {
+  return {
+    id: kb.slug, uuid: kb.id, icon: kb.icon || '🧠', col: getColorClass(kb.category),
+    name: kb.name, author: `@${kb.author_handle}`, author_id: kb.author_id, category: kb.category,
+    desc: kb.description || '', tags: kb.tags || [], docs: kb.doc_count, chunks: kb.chunk_count,
+    clones: kb.clone_count, stars: kb.avg_rating || 0, star_count: kb.star_count || 0,
+    reviews: kb.review_count || 0, updated: timeAgo(kb.updated_at), ns: kb.namespace,
+    bundle_path: kb.bundle_path, sampleDocs: [], price_cents: kb.price_cents || 0,
+  };
+}
+
+async function loadCatalog() {
+  if (!sb) { kbData = []; renderGrid(kbData); return; }
+  try {
+    const { data, error } = await sb.from('kb_listing').select('*').eq('visibility', 'public').order('clone_count', { ascending: false });
+    if (error || !data || data.length === 0) {
+      kbData = [];
+    } else {
+      kbData = data.map(mapKbRow);
+    }
+    catalogLoaded = true;
+    renderGrid(kbData);
+    renderFeatured();
+    updateSidebarCounts();
+  } catch {
+    kbData = [];
+    renderGrid(kbData);
+    renderFeatured();
+    updateSidebarCounts();
+  }
+}
+
+function renderFeatured() {
+  const banner = document.getElementById('featuredBanner');
+  const container = document.getElementById('featuredCards');
+  if (!banner || !container) return;
+  const top3 = [...kbData].sort((a,b) => (b.star_count||0) - (a.star_count||0)).slice(0, 3);
+  if (top3.length === 0) { banner.style.display = 'none'; return; }
+  banner.style.display = '';
+  container.innerHTML = top3.map(kb => `
+    <div class="featured-card" onclick="openKBModal(activeKBData.find(k=>k.id==='${kb.id}')||kbData.find(k=>k.id==='${kb.id}'))">
+      <div class="fc-icon ${kb.col}">${kb.icon}</div>
+      <div class="fc-name">${escHtml(kb.name)}</div>
+      <div class="fc-desc">${escHtml(kb.desc).slice(0, 90)}${kb.desc.length > 90 ? '…' : ''}</div>
+      <div class="fc-footer"><span class="fc-star">★</span><span class="fc-stat">${kb.star_count || 0} stars · ${fmtNum(kb.clones)} clones</span></div>
+    </div>`).join('');
+}
+
+// ── KBHUB RENDER ─────────────────────────────────────────────────────────
+function priceBadge(cents, kbUuid) {
+  if (cents > 0 && kbUuid && userPurchases.has(kbUuid)) return '<span class="kb-price-badge purchased">✓ Purchased</span>';
+  if (!cents || cents <= 0) return '<span class="kb-price-badge free">Free</span>';
+  return `<span class="kb-price-badge paid">$${(cents / 100).toFixed(2)}</span>`;
+}
+function cloneBtnLabel(kb) {
+  if (kb._local) return 'Open';
+  if (kb.price_cents > 0 && !userPurchases.has(kb.uuid)) return `Buy $${(kb.price_cents / 100).toFixed(2)}`;
+  if (kb.price_cents > 0 && userPurchases.has(kb.uuid)) return 'Clone (Purchased)';
+  return 'Clone';
+}
+function renderGrid(data, gridId='kbGrid', countId='resultCount') {
+  activeKBData = data || [];
+  const countEl = document.getElementById(countId);
+  const gridEl = document.getElementById(gridId);
+  if (countEl) countEl.textContent = `${activeKBData.length} knowledge bases`;
+  if (!gridEl) return;
+  if (activeKBData.length === 0) {
+    gridEl.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-title">No knowledge bases yet</div><div class="empty-sub">Be the first to publish one!</div></div>';
+    return;
+  }
+  gridEl.innerHTML = activeKBData.map(kb => `
+    <div class="kb-card" onclick="openKBModal(activeKBData.find(k=>k.id==='${kb.id}'))">
+      <div class="kb-card-header">
+        <div class="kb-icon ${kb.col}">${kb.icon}</div>
+        <div class="kb-meta">
+          <div class="kb-name">${escHtml(kb.name)} ${priceBadge(kb.price_cents, kb.uuid)}</div>
+          <div class="kb-author">by <span>${escHtml(kb.author)}</span> · ${escHtml(kb.category)}</div>
+        </div>
+      </div>
+      <div class="kb-desc">${escHtml(kb.desc)}</div>
+      <div class="kb-tags">${(kb.tags||[]).slice(0,4).map(t=>`<span class="kb-tag">${escHtml(t)}</span>`).join('')}</div>
+      <div class="kb-card-footer">
+        <span class="kb-stat">★ <strong>${kb.stars || kb.star_count || 0}</strong></span>
+        <span class="kb-stat">⎘ <strong>${fmtNum(kb.clones)}</strong></span>
+        <span class="kb-stat">📄 <strong>${fmtNum(kb.docs)}</strong> docs</span>
+        <button class="kb-clone-btn" onclick="event.stopPropagation();cloneKB('${kb.id}','${escAttr(kb.name)}','${kb.ns}','${kb.bundle_path||''}','${kb.uuid||''}',${kb.price_cents||0})">${cloneBtnLabel(kb)}</button>
+      </div>
+    </div>`).join('');
+}
+renderGrid(kbData);
+
+// ── KB MODAL ──────────────────────────────────────────────────────────────
+function openKBModal(kb) {
+  if (!kb) return;
+  const starred = userStars.has(kb.uuid);
+  const isPaid = (kb.price_cents || 0) > 0;
+  const purchased = userPurchases.has(kb.uuid);
+  document.getElementById('modalHd').innerHTML = `
+    <div class="modal-icon ${kb.col}">${kb.icon}</div>
+    <div><div class="modal-title">${escHtml(kb.name)} ${priceBadge(kb.price_cents, kb.uuid)}</div><div class="modal-sub">by ${escHtml(kb.author)} · ${escHtml(kb.category)} · updated ${kb.updated}</div></div>
+    <button class="modal-close" onclick="closeModalById('kbModal')">✕</button>`;
+  document.getElementById('modalBd').innerHTML = `
+    <p class="modal-desc">${escHtml(kb.desc)}</p>
+    <div class="m-stats">
+      <div class="m-stat"><div class="m-stat-val">${fmtNum(kb.docs)}</div><div class="m-stat-label">Documents</div></div>
+      <div class="m-stat"><div class="m-stat-val">${fmtNum(kb.chunks)}</div><div class="m-stat-label">Chunks</div></div>
+      <div class="m-stat"><div class="m-stat-val">${fmtNum(kb.clones)}</div><div class="m-stat-label">Clones</div></div>
+      <div class="m-stat"><div class="m-stat-val">★ ${kb.star_count || 0}</div><div class="m-stat-label">${kb.reviews} reviews</div></div>
+    </div>
+    ${(kb.sampleDocs && kb.sampleDocs.length) ? `<div class="m-section">Sample Documents</div><div class="sample-docs">${kb.sampleDocs.map(d=>`<div class="sample-doc"><span class="sd-icon">${d.e}</span><span class="sd-name">${escHtml(d.n)}</span><span class="sd-chunks">${d.c} chunks</span></div>`).join('')}</div>` : ''}
+    <div class="m-section">Tags</div>
+    <div class="m-tags">${(kb.tags||[]).map(t=>`<span class="m-tag">${escHtml(t)}</span>`).join('')}</div>
+    <div class="m-section">Clone to your agent</div>
+    <div class="clone-box">
+      <div style="font-size:12px;color:var(--muted)">CLI</div>
+      <div class="clone-cmd"><span>$ openclaw kb import ${kb.id}</span><button class="copy-btn" onclick="copyText('openclaw kb import ${kb.id}')">copy</button></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px">Agent (WhatsApp / Telegram)</div>
+      <div class="clone-cmd"><span style="color:var(--text2);font-style:italic">"import kb: ${kb.id}"</span></div>
+    </div>
+    <div class="clone-progress" id="cloneProgress"><div class="progress-label" id="cloneLabel">Preparing…</div><div class="progress-bar"><div class="progress-fill" id="cloneFill" style="width:0%"></div></div></div>
+    <div class="m-section" style="margin-top:14px">Namespace</div>
+    <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--accent2);padding:8px 12px;background:var(--surface2);border-radius:6px;border:1px solid var(--border)">${kb.ns}</div>
+    <div class="review-section" id="reviewSection" data-kb-id="${kb.uuid || ''}"></div>`;
+
+  const cloneLabel = isPaid && !purchased ? `Buy $${(kb.price_cents/100).toFixed(2)}` : '⎘ Clone KB';
+  document.getElementById('modalFt').innerHTML = `
+    <button class="btn btn-ghost" style="flex:1" id="starBtn" onclick="toggleStar('${kb.uuid || kb.id}',this)">${starred ? '★ Starred' : '♡ Star'}</button>
+    <button class="btn btn-ghost" style="flex:1" onclick="copyText('https://kbhub.ai/kb/${kb.id}');showToast('Link copied','🔗')">↗ Share</button>
+    <button class="btn btn-primary" style="flex:1" onclick="cloneKB('${kb.id}','${escAttr(kb.name)}','${kb.ns}','${kb.bundle_path||''}','${kb.uuid||''}',${kb.price_cents||0})">${cloneLabel}</button>`;
+
+  if (starred) { const sb2 = document.getElementById('starBtn'); sb2.style.color = 'var(--gold)'; }
+  document.getElementById('kbModal').classList.add('open');
+  if (kb.uuid) loadReviews(kb.uuid);
+}
+
+function closeModalById(id) { document.getElementById(id).classList.remove('open'); }
+
+/** Stripe flows break in many embedded/preview browsers; prefer a real tab. */
+function openStripeFlowUrl(url, toastWhenNewTab) {
+  const w = window.open(url, '_blank', 'noopener,noreferrer');
+  if (w) {
+    showToast(toastWhenNewTab, '💳');
+    return true;
+  }
+  window.location.href = url;
+  return false;
+}
+
+// ── CLONE (real bundle download + import) ─────────────────────────────────
+async function cloneKB(id, name, ns, bundlePath, kbUuid, priceCents) {
+  closeModalById('kbModal');
+  priceCents = parseInt(priceCents) || 0;
+
+  if (priceCents > 0 && !userPurchases.has(kbUuid)) {
+    if (!currentUser) { showToast('Sign in to purchase this KB', '⚠'); return; }
+    showToast('Redirecting to checkout…', '💳');
+    try {
+      const resp = await apiPost('/create-checkout', { kb_id: kbUuid, buyer_id: currentUser.id });
+      if (resp.checkout_url) {
+        openStripeFlowUrl(resp.checkout_url, 'Pay in the new tab — test card: 4242 4242 4242 4242, any future date, any CVC.');
+        return;
+      }
+    } catch (e) {
+      showToast(`Checkout failed: ${e.message}`, '⚠'); return;
+    }
+  }
+
+  showToast(`Cloning "${name}"…`, '⎘');
+
+  try {
+    let bundleJson;
+    if (sb && bundlePath) {
+      showToast('Downloading bundle from KBHub…', '⎘');
+      const { data: blob, error } = await sb.storage.from('kb-bundles').download(bundlePath);
+      if (error) throw new Error(`Download failed: ${error.message}`);
+      const text = await blob.text();
+      bundleJson = JSON.parse(text);
+    } else {
+      showToast('No bundle available — creating placeholder…', '⎘');
+      await apiPost('/ingest', {
+        content: `Cloned knowledge base: ${name} (${id}). Bundle not available — this is a placeholder.`,
+        type: 'text', title: `[Cloned] ${name}`, tags: ['kbhub', 'cloned', id], namespace: ns || 'default',
+      });
+      showToast(`"${name}" cloned (placeholder)`, '✓');
+      return;
+    }
+
+    showToast('Importing into your agent…', '⎘');
+    const result = await apiPost('/import-bundle', bundleJson);
+    showToast(`"${name}" cloned — ${result.doc_count} docs, ${result.chunk_count} chunks`, '✓');
+
+    if (sb && currentUser && kbUuid) {
+      await sb
+        .from('kb_clones')
+        .upsert({ user_id: currentUser.id, kb_id: kbUuid }, { onConflict: 'user_id,kb_id' })
+        .catch(() => {});
+    }
+
+    if (sb && kbUuid) {
+      await sb.rpc('increment_clones', { kb_id: kbUuid }).catch(() => {});
+    }
+  } catch (e) {
+    showToast(`Clone failed: ${e.message}`, '⚠');
+  }
+}
+
+// ── STAR (Supabase) ───────────────────────────────────────────────────────
+async function toggleStar(kbId, btn) {
+  if (!sb || !currentUser) {
+    if (!currentUser) { showToast('Sign in to star KBs', '♡'); document.getElementById('authModal').classList.add('open'); }
+    return;
+  }
+  const isStarred = userStars.has(kbId);
+  if (isStarred) {
+    btn.textContent = '♡ Star'; btn.style.color = '';
+    userStars.delete(kbId);
+    await sb.from('stars').delete().match({ user_id: currentUser.id, kb_id: kbId });
+    showToast('Removed from starred', '♡');
+  } else {
+    btn.textContent = '★ Starred'; btn.style.color = 'var(--gold)';
+    userStars.add(kbId);
+    await sb.from('stars').insert({ user_id: currentUser.id, kb_id: kbId });
+    showToast('Added to starred', '★');
+  }
+}
+
+// ── REVIEWS (Supabase) ────────────────────────────────────────────────────
+async function loadReviews(kbUuid) {
+  const section = document.getElementById('reviewSection');
+  if (!section || !kbUuid) return;
+  let reviewsHtml = '';
+
+  if (sb && currentUser) {
+    reviewsHtml += `
+      <div class="m-section" style="margin-top:14px">Write a Review</div>
+      <div class="review-form">
+        <div class="star-picker" id="starPicker">${[1,2,3,4,5].map(n=>`<span class="star-pick" data-val="${n}" onclick="pickStar(${n})">★</span>`).join('')}</div>
+        <textarea class="form-input" id="reviewBody" placeholder="Share your experience with this KB…" style="min-height:60px"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="submitReview('${kbUuid}')">Submit Review</button>
+      </div>`;
+  }
+
+  if (sb) {
+    const { data: reviews } = await sb.from('reviews').select('*, profiles(display_name, handle)').eq('kb_id', kbUuid).order('created_at', { ascending: false }).limit(10);
+    if (reviews && reviews.length) {
+      reviewsHtml += `<div class="m-section">Reviews (${reviews.length})</div><div class="review-list">`;
+      for (const r of reviews) {
+        reviewsHtml += `<div class="review-item">
+          <div class="review-top"><span class="review-author">${escHtml(r.profiles?.display_name || 'User')}</span><span class="review-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span><span class="review-date">${timeAgo(r.created_at)}</span></div>
+          ${r.body ? `<div class="review-body">${escHtml(r.body)}</div>` : ''}
+        </div>`;
+      }
+      reviewsHtml += '</div>';
+    }
+  }
+  section.innerHTML = reviewsHtml;
+}
+
+let selectedRating = 0;
+function pickStar(n) {
+  selectedRating = n;
+  document.querySelectorAll('#starPicker .star-pick').forEach(s => {
+    s.classList.toggle('on', parseInt(s.dataset.val) <= n);
+  });
+}
+
+async function submitReview(kbUuid) {
+  if (!sb || !currentUser) return;
+  if (!selectedRating) { showToast('Select a rating', '⚠'); return; }
+  const body = document.getElementById('reviewBody')?.value?.trim() || '';
+  try {
+    const { error } = await sb.from('reviews').upsert({
+      user_id: currentUser.id, kb_id: kbUuid, rating: selectedRating, body
+    }, { onConflict: 'user_id,kb_id' });
+    if (error) throw error;
+    showToast('Review submitted!', '★');
+    selectedRating = 0;
+    loadReviews(kbUuid);
+  } catch (e) {
+    showToast(`Review failed: ${e.message}`, '⚠');
+  }
+}
+
+// ── KBHUB: MY KBs ────────────────────────────────────────────────────────
+let myKBsLoaded = false;
+async function loadMyKBs() {
+  if (myKBsLoaded) return;
+  try {
+    if (!sb || !currentUser) return;
+    const { data } = await sb.from('knowledge_bases').select('id').eq('author_id', currentUser.id);
+    const el = document.getElementById('sbCountMyKBs');
+    if (el) el.textContent = (data || []).length;
+
+    const { data: clones } = await sb.from('kb_clones').select('kb_id').eq('user_id', currentUser.id);
+    const clEl = document.getElementById('sbCountClones');
+    if (clEl) clEl.textContent = (clones || []).length;
+
+    const stEl = document.getElementById('sbCountStarred');
+    if (stEl) stEl.textContent = userStars.size;
+  } catch { /* ignore */ }
+  myKBsLoaded = true;
+}
+
+function updateSidebarCounts() {
+  const allEl = document.getElementById('sbCountAll');
+  if (allEl) allEl.textContent = kbData.length;
+}
+
+// ── KBHUB: PAGE — My KBs (real DB) ──────────────────────────────────────
+async function loadMyPublishedKBs() {
+  const gridId = 'myKbsGrid';
+  const countId = 'myKbsResultCount';
+  const gridEl = document.getElementById(gridId);
+  if (!gridEl) return;
+  if (!sb || !currentUser) {
+    document.getElementById(countId).textContent = 'Sign in to see your KBs';
+    document.getElementById('authModal')?.classList.add('open');
+    return;
+  }
+
+  document.getElementById(countId).textContent = 'Loading…';
+  try {
+    const { data } = await sb.from('kb_listing').select('*').eq('author_id', currentUser.id).order('updated_at', { ascending: false });
+    renderGrid((data || []).map(mapKbRow), gridId, countId);
+  } catch (e) {
+    renderGrid([], gridId, countId);
+    document.getElementById(countId).textContent = 'Could not load your KBs';
+  }
+}
+
+// ── KBHUB: PAGE — My Clones (real DB) ───────────────────────────────────
+async function loadMyClonedKBs() {
+  const gridId = 'myClonesGrid';
+  const countId = 'myClonesResultCount';
+  const gridEl = document.getElementById(gridId);
+  if (!gridEl) return;
+  if (!sb || !currentUser) {
+    document.getElementById(countId).textContent = 'Sign in to see your clones';
+    document.getElementById('authModal')?.classList.add('open');
+    return;
+  }
+
+  document.getElementById(countId).textContent = 'Loading…';
+  try {
+    const { data: clones } = await sb.from('kb_clones').select('kb_id, created_at').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    const cloneRows = clones || [];
+    const kbIds = cloneRows.map(c => c.kb_id);
+    if (kbIds.length === 0) {
+      renderGrid([], gridId, countId);
+      document.getElementById(countId).textContent = 'No clones yet';
+      return;
+    }
+
+    const { data: kbs } = await sb.from('kb_listing').select('*').in('id', kbIds);
+    const kbById = new Map((kbs || []).map(kb => [kb.id, kb]));
+    const cards = cloneRows
+      .map(c => kbById.get(c.kb_id))
+      .filter(Boolean)
+      .map(mapKbRow);
+
+    renderGrid(cards, gridId, countId);
+  } catch (e) {
+    renderGrid([], gridId, countId);
+    document.getElementById(countId).textContent = 'Could not load your clones';
+  }
+}
+
+// ── KBHUB: PAGE — Account info (minimal) ────────────────────────────────
+async function loadAccountPage() {
+  const avatarEl = document.getElementById('accountAvatar');
+  const nameInput = document.getElementById('accountEditDisplayName');
+  const handleEl = document.getElementById('accountHandle');
+  const emailInput = document.getElementById('accountEditEmail');
+  const pwdInput = document.getElementById('accountEditPassword');
+  const msgEl = document.getElementById('accountPageMsg');
+
+  if (!sb || !currentUser) {
+    if (avatarEl) avatarEl.textContent = '?';
+    if (nameInput) nameInput.value = '';
+    if (handleEl) handleEl.value = '';
+    if (emailInput) emailInput.value = '';
+    if (pwdInput) pwdInput.value = '';
+    if (msgEl) { msgEl.className = 'auth-msg error'; msgEl.textContent = 'Please sign in to view your account.'; }
+    return;
+  }
+
+  if (!currentProfile) {
+    try { await loadProfile(); } catch { /* ignore */ }
+  }
+
+  const initials = (currentProfile?.display_name || currentUser.email || '?')
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  if (avatarEl) avatarEl.textContent = initials;
+  if (nameInput) nameInput.value = currentProfile?.display_name || '';
+  if (handleEl) handleEl.value = currentProfile?.handle ? `@${currentProfile.handle}` : '';
+  if (emailInput) emailInput.value = currentUser.email || '';
+  if (pwdInput) pwdInput.value = '';
+  if (msgEl) { msgEl.className = 'auth-msg'; msgEl.textContent = ''; }
+
+  const notConnected = document.getElementById('stripeNotConnected');
+  const connected = document.getElementById('stripeConnected');
+  if (currentProfile?.stripe_account_id) {
+    if (notConnected) notConnected.style.display = 'none';
+    if (connected) connected.style.display = '';
+    loadSellerEarnings();
+  } else {
+    if (notConnected) notConnected.style.display = 'flex';
+    if (connected) connected.style.display = 'none';
+  }
+}
+
+async function connectStripe() {
+  if (!currentUser) { showToast('Sign in to connect Stripe', '⚠'); return; }
+  const btn = document.getElementById('stripeConnectBtn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Redirecting…'; }
+  try {
+    const resp = await apiPost('/connect-stripe', { user_id: currentUser.id });
+    if (resp.onboarding_url) {
+      const opened = openStripeFlowUrl(
+        resp.onboarding_url,
+        'Finish Stripe in the new tab, then close it and refresh this page (or open this site in Chrome/Edge if the tab failed).',
+      );
+      if (opened && btn) { btn.disabled = false; btn.textContent = '💳 Connect Stripe'; }
+      return;
+    }
+    throw new Error('No onboarding URL returned');
+  } catch (e) {
+    showToast(`Stripe Connect failed: ${e.message}`, '⚠');
+    if (btn) { btn.disabled = false; btn.textContent = '💳 Connect Stripe'; }
+  }
+}
+
+async function openStripeDashboard() {
+  if (!currentUser) return;
+  showToast('Opening Stripe dashboard…', '📊');
+  try {
+    const resp = await apiPost('/stripe-dashboard', { user_id: currentUser.id });
+    if (resp.dashboard_url) { window.open(resp.dashboard_url, '_blank'); return; }
+    throw new Error('No dashboard URL returned');
+  } catch (e) {
+    showToast(`Could not open dashboard: ${e.message}`, '⚠');
+  }
+}
+
+async function loadSellerEarnings() {
+  if (!currentUser) return;
+  try {
+    const resp = await apiPost('/seller-earnings', { user_id: currentUser.id });
+    const fmt = (cents) => `$${(cents / 100).toFixed(2)}`;
+    const gross = resp.gross_sales_cents ?? resp.total_earned_cents ?? 0;
+    const grossEl = document.getElementById('earningsGross');
+    const netEl = document.getElementById('earningsNet');
+    const salesEl = document.getElementById('earningsSales');
+    const pendingEl = document.getElementById('earningsPending');
+    const feesEl = document.getElementById('earningsFees');
+    const refundEl = document.getElementById('earningsRefunded');
+    if (grossEl) grossEl.textContent = fmt(gross);
+    if (netEl) netEl.textContent = fmt(resp.net_earned_cents || 0);
+    if (salesEl) salesEl.textContent = resp.total_sales ?? 0;
+    if (pendingEl) pendingEl.textContent = resp.pending_sales ?? 0;
+    if (feesEl) feesEl.textContent = fmt(resp.platform_fee_cents || 0);
+    if (refundEl) refundEl.textContent = resp.refunded_sales ?? 0;
+  } catch (e) {
+    console.warn('seller-earnings', e);
+  }
+}
+
+function showAccountPageMsg(text, type) {
+  const el = document.getElementById('accountPageMsg');
+  if (!el) return;
+  el.textContent = text;
+  el.className = `auth-msg ${type}`;
+}
+
+async function submitAccountUpdates() {
+  if (!sb || !currentUser) {
+    showAccountPageMsg('Sign in required.', 'error');
+    document.getElementById('authModal')?.classList.add('open');
+    return;
+  }
+
+  const nameInput = document.getElementById('accountEditDisplayName');
+  const handleEl = document.getElementById('accountHandle'); // disabled/read-only; not used for updates
+  const emailInput = document.getElementById('accountEditEmail');
+  const pwdInput = document.getElementById('accountEditPassword');
+
+  const display_name = (nameInput?.value || '').trim();
+  const email = (emailInput?.value || '').trim();
+  const password = pwdInput?.value || '';
+
+  if (!display_name) { showAccountPageMsg('Display name is required.', 'error'); return; }
+  if (!email) { showAccountPageMsg('Email is required.', 'error'); return; }
+
+  try {
+    showAccountPageMsg('Saving…', 'success');
+
+    // 1) Update display name (profiles table; username/handle stays disabled).
+    const { error: profileErr } = await sb
+      .from('profiles')
+      .update({ display_name })
+      .eq('id', currentUser.id);
+    if (profileErr) throw profileErr;
+
+    // 2) Update email + optional password (Supabase auth).
+    const updates = {};
+    if (email !== currentUser.email) updates.email = email;
+    if (password) updates.password = password;
+
+    if (Object.keys(updates).length > 0) {
+      const { data, error: authErr } = await sb.auth.updateUser(updates);
+      if (authErr) throw authErr;
+      if (data?.user) currentUser = data.user;
+    }
+
+    await loadProfile();
+    updateAuthUI();
+    if (pwdInput) pwdInput.value = '';
+    showToast('Account updated', '✓');
+    showAccountPageMsg('Account updated.', 'success');
+    // refresh the page fields from the latest state
+    await loadAccountPage();
+  } catch (e) {
+    showAccountPageMsg(e.message || 'Could not update account.', 'error');
+  }
+}
+
+// ── KBHUB: PUBLISH (ingest content → export bundle → Supabase Storage + catalog) ──
+async function publishKB() {
+  if (!sb || !currentUser) {
+    showToast('Sign in to publish a Knowledge Base', '⚠');
+    document.getElementById('authModal')?.classList.add('open');
+    return;
+  }
+
+  const name = document.getElementById('pubName').value.trim();
+  if (!name) { showToast('KB name is required', '⚠'); return; }
+  if (publishItems.length === 0) { showToast('Add at least one content item', '⚠'); return; }
+
+  const slug = document.getElementById('pubSlug').value.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  const desc = document.querySelector('#publishModal textarea.form-input')?.value?.trim() || '';
+  const tagsRaw = document.querySelector('#publishModal input[placeholder*="research"]')?.value?.trim() || '';
+  const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+  const ns = `kb-${slug}`;
+  const selectedIcon = document.querySelector('#publishModal .icon-opt.selected')?.textContent || '🧠';
+  const category = document.querySelector('#publishModal select.form-input')?.value || 'Research';
+  const priceUsd = parseFloat(document.getElementById('pubPrice')?.value || '0');
+  const price_cents = Math.max(0, Math.round(priceUsd * 100));
+
+  let visibility = 'public';
+  document.querySelectorAll('#publishModal .radio-group')[0]?.querySelectorAll('.radio-option').forEach(o => {
+    if (o.classList.contains('selected')) visibility = o.textContent.toLowerCase().includes('private') ? 'private' : o.textContent.toLowerCase().includes('unlisted') ? 'unlisted' : 'public';
+  });
+
+  const btn = document.querySelector('#publishModal .btn-primary');
+  btn.disabled = true;
+
+  try {
+    btn.textContent = `Ingesting content (0/${publishItems.length})…`;
+    for (let i = 0; i < publishItems.length; i++) {
+      btn.textContent = `Ingesting content (${i + 1}/${publishItems.length})…`;
+      const item = publishItems[i];
+      await apiPost('/ingest', {
+        content: item.content,
+        type: item.type,
+        title: item.title,
+        tags,
+        namespace: ns,
+      });
+    }
+
+    btn.textContent = 'Exporting bundle…';
+    const bundle = await apiPost('/export-bundle', { namespace: ns, slug, name });
+    console.log('[publish] Bundle exported:', bundle.meta);
+
+    btn.textContent = 'Uploading to KBHub…';
+    const bundleStr = JSON.stringify(bundle);
+    const bundleBlob = new Blob([bundleStr], { type: 'application/json' });
+    const storagePath = `${currentUser.id}/${slug}.json`;
+
+    console.log('[publish] Uploading to storage:', storagePath, '(' + bundleStr.length + ' bytes)');
+    const { data: uploadData, error: uploadErr } = await sb.storage.from('kb-bundles').upload(storagePath, bundleBlob, { upsert: true });
+    if (uploadErr) {
+      console.error('[publish] Storage upload error:', uploadErr);
+      throw new Error(`Upload failed: ${uploadErr.message}`);
+    }
+    console.log('[publish] Upload success:', uploadData);
+
+    btn.textContent = 'Publishing catalog entry…';
+    const insertPayload = {
+      slug, name, description: desc, icon: selectedIcon, category, tags, namespace: ns,
+      visibility, author_id: currentUser.id, bundle_path: storagePath,
+      doc_count: bundle.meta.doc_count, chunk_count: bundle.meta.chunk_count,
+      price_cents,
+    };
+    console.log('[publish] Inserting catalog entry:', insertPayload);
+    const { data: insertData, error: insertErr } = await sb.from('knowledge_bases').insert(insertPayload).select();
+    if (insertErr) {
+      console.error('[publish] Catalog insert error:', insertErr);
+      throw new Error(`Catalog insert failed: ${insertErr.message}`);
+    }
+    console.log('[publish] Catalog entry created:', insertData);
+
+    publishItems = [];
+    closeModalById('publishModal');
+    showToast(`"${name}" published to KBHub!`, '✦');
+    catalogLoaded = false;
+    loadCatalog();
+  } catch (e) {
+    console.error('[publish] Error:', e);
+    showToast(`Publish failed: ${e.message}`, '⚠');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Publish Knowledge Base';
+  }
+}
+
+// ── KBHUB: IMPORT (from URL/slug or bundle download) ─────────────────────
+async function importKB() {
+  const urlOrSlug = document.getElementById('importSlug')?.value?.trim();
+  const ns = document.getElementById('importNs')?.value?.trim() || 'default';
+  if (!urlOrSlug) { showToast('Enter a URL or slug to import', '⚠'); return; }
+
+  const btn = document.querySelector('#importModal .btn-primary');
+  btn.disabled = true;
+  btn.textContent = 'Looking up KB…';
+
+  try {
+    let found = false;
+    if (sb) {
+      const lookupSlug = urlOrSlug.includes('/') ? urlOrSlug.split('/').pop() : urlOrSlug;
+      const { data: kbRow } = await sb.from('knowledge_bases').select('*').eq('slug', lookupSlug).maybeSingle();
+      if (kbRow && kbRow.bundle_path) {
+        found = true;
+
+        if (kbRow.price_cents > 0 && currentUser) {
+          const purchased = userPurchases.has(kbRow.id);
+          if (!purchased) {
+            showToast('This is a paid KB — purchase it from the catalog first', '⚠');
+            btn.disabled = false;
+            btn.textContent = '⭳ Import KB';
+            return;
+          }
+        }
+
+        btn.textContent = 'Downloading bundle…';
+        const { data: blob, error } = await sb.storage.from('kb-bundles').download(kbRow.bundle_path);
+        if (error) throw new Error(`Download failed: ${error.message}`);
+        const text = await blob.text();
+        const bundleJson = JSON.parse(text);
+
+        if (ns && ns !== 'default') {
+          bundleJson.meta = { ...bundleJson.meta, namespace: ns };
+        }
+
+        btn.textContent = 'Importing…';
+        const result = await apiPost('/import-bundle', bundleJson);
+
+        await sb.rpc('increment_clones', { kb_id: kbRow.id }).catch(() => {});
+        if (currentUser) {
+          await sb.from('kb_clones').upsert({ user_id: currentUser.id, kb_id: kbRow.id }, { onConflict: 'user_id,kb_id' }).catch(() => {});
+        }
+
+        closeModalById('importModal');
+        showToast(`Imported "${kbRow.name}" — ${result.doc_count} docs, ${result.chunk_count} chunks`, '✓');
+        myKBsLoaded = false;
+        loadMyKBs();
+        return;
+      }
+    }
+
+    if (!found) {
+      throw new Error(`No knowledge base found for "${urlOrSlug}". Make sure the slug matches a published KB on KBHub.`);
+    }
+  } catch (e) {
+    showToast(`Import failed: ${e.message}`, '⚠');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⭳ Import KB';
+  }
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────
+let currentSort = 'popular', searchQuery = '';
+function filterKBs(q) { searchQuery = q.toLowerCase(); applyFilters(); }
+function setSort(el, sort) { document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active')); el.classList.add('active'); currentSort=sort; applyFilters(); }
+function applyFilters() {
+  let data = [...kbData];
+  if (searchQuery) data = data.filter(kb => kb.name.toLowerCase().includes(searchQuery) || kb.desc.toLowerCase().includes(searchQuery) || (kb.tags||[]).some(t=>t.includes(searchQuery)));
+  if (currentSort==='clones') data.sort((a,b)=>b.clones-a.clones);
+  else if (currentSort==='new') data = [...data].reverse();
+  else if (currentSort==='updated') data = data;
+  else data.sort((a,b)=>(b.star_count||0)-(a.star_count||0)||(b.clones||0)-(a.clones||0));
+  renderGrid(data);
+}
+function setKBNav(el, action) {
+  document.querySelectorAll('.sb-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  if (action === 'my-kbs' || action === 'my-clones' || action === 'starred') {
+    if (!currentUser) { document.getElementById('authModal')?.classList.add('open'); return; }
+    if (action === 'my-kbs') { showPage('my-kbs'); return; }
+    if (action === 'my-clones') { showPage('my-clones'); return; }
+    if (action === 'starred') { showPage('kbhub'); filterStarred(); return; }
+  }
+  if (action === 'all') { showPage('kbhub'); renderGrid(kbData); return; }
+  if (action === 'trending') { showPage('kbhub'); const sorted = [...kbData].sort((a,b)=>(b.clones||0)-(a.clones||0)); renderGrid(sorted); return; }
+  if (action === 'new') { showPage('kbhub'); const sorted = [...kbData].reverse(); renderGrid(sorted); return; }
+  if (action === 'top-rated') { showPage('kbhub'); const sorted = [...kbData].sort((a,b)=>(b.star_count||0)-(a.star_count||0)); renderGrid(sorted); return; }
+}
+function filterStarred() {
+  const starred = kbData.filter(kb => userStars.has(kb.uuid));
+  renderGrid(starred);
+}
+function toggleCat(el) {
+  document.querySelectorAll('.cat-tag').forEach(c=>c.classList.remove('active')); el.classList.add('active');
+  const cat = el.textContent.trim();
+  if (cat==='All') { renderGrid(kbData); return; }
+  const f = kbData.filter(kb=>kb.category===cat||(kb.tags||[]).includes(cat.toLowerCase()));
+  renderGrid(f.length ? f : kbData);
+}
+
+// ── MODALS ────────────────────────────────────────────────────────────────
+// ── PUBLISH: Content item management ──────────────────────────────────────
+let publishItems = [];
+
+function pubRenderItems() {
+  const list = document.getElementById('pubContentList');
+  if (!list) return;
+  if (publishItems.length === 0) {
+    list.innerHTML = '<div class="pub-empty">No content added yet. Add at least one item below.</div>';
+    return;
+  }
+  list.innerHTML = publishItems.map((item, i) => {
+    const icon = item.type === 'text' ? '📝' : item.type === 'url' ? '🌐' : '📄';
+    const meta = item.type === 'url' ? item.content.slice(0, 60) : `${item.type} · ${item.size || ''}`;
+    return `<div class="pub-item">
+      <div class="pub-item-icon">${icon}</div>
+      <div class="pub-item-info"><div class="pub-item-title">${escHtml(item.title)}</div><div class="pub-item-meta">${escHtml(meta)}</div></div>
+      <button class="pub-item-remove" onclick="pubRemoveItem(${i})" title="Remove">✕</button>
+    </div>`;
+  }).join('');
+}
+
+function pubRemoveItem(i) { publishItems.splice(i, 1); pubRenderItems(); }
+
+function pubShowAddPanel(type) {
+  document.getElementById('pubAddPanel').style.display = '';
+  document.getElementById('pubAddText').style.display = type === 'text' ? '' : 'none';
+  document.getElementById('pubAddUrl').style.display = type === 'url' ? '' : 'none';
+}
+
+function pubHideAddPanel() {
+  document.getElementById('pubAddPanel').style.display = 'none';
+  document.getElementById('pubTextTitle').value = '';
+  document.getElementById('pubTextContent').value = '';
+  document.getElementById('pubUrlInput').value = '';
+}
+
+function pubAddTextItem() {
+  const title = document.getElementById('pubTextTitle').value.trim() || 'Untitled text';
+  const content = document.getElementById('pubTextContent').value.trim();
+  if (!content) { showToast('Enter some text content', '⚠'); return; }
+  publishItems.push({ type: 'text', title, content, size: `${content.length} chars` });
+  pubHideAddPanel();
+  pubRenderItems();
+}
+
+function pubAddUrlItem() {
+  const url = document.getElementById('pubUrlInput').value.trim();
+  if (!url) { showToast('Enter a URL', '⚠'); return; }
+  const title = url.replace(/^https?:\/\//, '').split('/').slice(0, 2).join('/');
+  publishItems.push({ type: 'url', title, content: url, size: 'URL' });
+  pubHideAddPanel();
+  pubRenderItems();
+}
+
+function pubHandleFiles(files) {
+  Array.from(files).forEach(file => {
+    const reader = new FileReader();
+    const ext = file.name.split('.').pop().toLowerCase();
+    const isPdf = ext === 'pdf';
+    reader.onload = () => {
+      let content, type;
+      if (isPdf) {
+        const base64 = reader.result.split(',')[1];
+        content = base64;
+        type = 'pdf_base64';
+      } else {
+        content = reader.result;
+        type = ext === 'md' ? 'markdown' : 'text';
+      }
+      publishItems.push({ type, title: file.name, content, size: `${(file.size / 1024).toFixed(1)} KB` });
+      pubRenderItems();
+    };
+    if (isPdf) reader.readAsDataURL(file); else reader.readAsText(file);
+  });
+  document.getElementById('pubFileInput').value = '';
+}
+
+function openPublishModal() {
+  if (!currentUser && sb) { showToast('Sign in to publish', '⚠'); document.getElementById('authModal').classList.add('open'); return; }
+  publishItems = [];
+  pubRenderItems();
+  pubHideAddPanel();
+  document.getElementById('publishModal').classList.add('open');
+}
+function openImportModal() {
+  document.getElementById('importSlug').value = '';
+  document.getElementById('importNs').value = '';
+  document.getElementById('importModal').classList.add('open');
+}
+
+document.getElementById('pubName').addEventListener('input', function() {
+  document.getElementById('pubSlug').value = this.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+});
+function selectIcon(el) { document.querySelectorAll('.icon-opt').forEach(i=>i.classList.remove('selected')); el.classList.add('selected'); }
+function selectRadio(el) { el.closest('.radio-group').querySelectorAll('.radio-option').forEach(o=>o.classList.remove('selected')); el.classList.add('selected'); }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, icon='✓') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+function copyText(text) { navigator.clipboard?.writeText(text).catch(()=>{}); showToast('Copied to clipboard!','⎘'); }
+
+// ── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    closeUserMenu();
+  }
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+(async function init() {
+  await checkHealth();
+
+  try {
+    const res = await fetch(`${API_BASE}/frontend/config.json`);
+    if (res.ok) {
+      const cfg = await res.json();
+      if (cfg.supabase_url && cfg.supabase_anon_key && window.supabase) {
+        sb = window.supabase.createClient(cfg.supabase_url, cfg.supabase_anon_key);
+      }
+    }
+  } catch { /* config not available */ }
+
+  if (sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session?.user) {
+      currentUser = session.user;
+      await loadProfile();
+      await loadUserStars();
+      await loadUserPurchases();
+    }
+    sb.auth.onAuthStateChange(async (event, session) => {
+      myKBsLoaded = false;
+      catalogLoaded = false;
+      if (session?.user) {
+        currentUser = session.user;
+        await loadProfile();
+        await loadUserStars();
+        await loadUserPurchases();
+      } else {
+        currentUser = null;
+        currentProfile = null;
+        userStars = new Set();
+        userPurchases = new Set();
+      }
+      updateAuthUI();
+    });
+  }
+  updateAuthUI();
+
+  const urlP = new URLSearchParams(window.location.search);
+  if (urlP.get('checkout') === 'success') {
+    const kbId = urlP.get('kb_id');
+    showToast('Purchase successful! You can now clone this KB.', '✓');
+    if (kbId) userPurchases.add(kbId);
+    if (currentUser) {
+      try {
+        await apiPost('/reconcile-kb-purchases', { user_id: currentUser.id });
+        await loadUserPurchases();
+      } catch (e) { console.warn('post-checkout reconcile', e); }
+    }
+    window.history.replaceState({}, '', window.location.pathname + '#kbhub');
+    showPage('kbhub');
+  } else if (urlP.get('stripe') === 'connected') {
+    showToast('Stripe account connected! You can now sell paid KBs.', '✓');
+    if (currentUser) { await loadProfile(); }
+    window.history.replaceState({}, '', window.location.pathname + '#account');
+    showPage('account');
+  } else {
+    const hash = window.location.hash.replace('#', '');
+    const validPages = ['home','kbhub','my-kbs','my-clones','account'];
+    if (hash && validPages.includes(hash)) {
+      showPage(hash);
+    }
+  }
+})();
+</script>
+</body>
+</html>

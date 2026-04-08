@@ -1,0 +1,57 @@
+# Cursor Rules — OpenClaw Knowledge Base
+
+## Project Overview
+This is a semantic knowledge base service built as an OpenClaw agent skill.
+FastAPI backend + Pinecone vector store + OpenAI embeddings/RAG + vanilla HTML frontend.
+
+## Stack
+- Python 3.12, FastAPI, Uvicorn
+- Pinecone (serverless, cosine similarity, 1536-dim)
+- OpenAI: text-embedding-3-small (embeddings), gpt-4o-mini (RAG)
+- tiktoken for token-aware chunking
+- pypdf + BeautifulSoup4 for document parsing
+- Frontend: plain HTML/CSS/JS in frontend/index.html (no framework)
+
+## Code Style
+- Python: use async/await throughout, type hints on all functions
+- FastAPI: keep routers thin, business logic lives in services/
+- Pydantic v2 for all models (use model_config, not class Config)
+- Use httpx.AsyncClient for all HTTP calls, never requests
+- Never use print() — use Python logging
+- Handle all external API errors with try/except and HTTPException
+
+## Architecture Rules
+- server/routers/ — only request parsing + response shaping
+- server/services/ — all business logic (embeddings, vectorstore, ingestion, rag)
+- server/models/schemas.py — all Pydantic models in one file
+- Each Pinecone vector ID format: {doc_id}#chunk#{index}
+- Metadata stored on each vector: doc_id, title, chunk, chunk_index, tags, created_at, namespace
+
+## Environment
+- All config comes from environment variables (python-dotenv in dev)
+- Never hardcode API keys or URLs
+- See .env.example for all available variables
+
+## Frontend
+- frontend/index.html is a single self-contained file
+- Uses CSS variables for theming (all defined in :root)
+- Two pages: home (#page-home) and kbhub (#page-kbhub)
+- showPage('home') / showPage('kbhub') switches between them
+- Color palette: --bg:#0c0b09, --accent:#ff5c00, --gold:#f0c040
+- Fonts: Syne (headings), DM Mono (code/mono), DM Sans (body)
+- No build step, no npm — keep it that way unless there's a strong reason
+
+## Naming Conventions
+- Python files: snake_case
+- Python classes: PascalCase
+- API routes: /kebab-case
+- CSS classes: kebab-case
+- JS functions: camelCase
+
+## What Already Exists (don't recreate)
+- All 5 API endpoints (ingest, search, ask, documents, health)
+- Pinecone init + upsert + query + delete + list
+- OpenAI embeddings + chunking
+- Text/Markdown/PDF/URL ingestion
+- RAG context building + answer generation
+- Full homepage + KBHub frontend UI
