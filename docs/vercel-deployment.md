@@ -1,6 +1,8 @@
 # Deploy OpenClaw KB to Vercel
 
-This repo is a **FastAPI** app that also serves the **vanilla HTML** frontend. Vercel runs it as a **single Python serverless function** with **Mangum** (ASGI adapter) and **rewrites** so all routes (`/`, `/ingest`, `/health`, …) hit that function.
+This repo is a **FastAPI** app that also serves the **vanilla HTML** frontend. Vercel’s official **FastAPI** preset expects a **`main.py` at the repository root** that exposes an ASGI **`app`**. This repo uses a thin root **`main.py`** that imports **`server.main:app`** (same app you run locally with Uvicorn).
+
+The old **`api/index.py` + `functions` + `rewrites`** setup is **not** used: Vercel often reports *“pattern doesn’t match any Serverless Functions”* for `api/**/*.py` when the FastAPI builder only registers the root **`main.py`** entry.
 
 ---
 
@@ -15,9 +17,9 @@ This repo is a **FastAPI** app that also serves the **vanilla HTML** frontend. V
 
 1. **Connect the Git repo** to Vercel (Dashboard → Add New → Project → import repo).
 
-2. **Framework preset**: Vercel may auto-detect nothing useful — leave defaults; the important pieces are `vercel.json`, `api/index.py`, and root `requirements.txt`.
+2. **Framework preset**: Choose **FastAPI**, or rely on **`vercel.json`** (`"framework": "fastapi"`). Do **not** use Next.js or another preset that steals routing.
 
-3. **Root directory**: repository root (where `vercel.json` lives).
+3. **Root directory**: repository root (where `vercel.json` and `main.py` live).
 
 4. **Environment variables** (Vercel → Project → Settings → Environment Variables). Set at least:
 
@@ -35,35 +37,42 @@ This repo is a **FastAPI** app that also serves the **vanilla HTML** frontend. V
 
    Add any other vars from your local `.env` / `.env.example` that the app reads.
 
-5. **Stripe webhook (production)**  
+5. **Function duration (optional)**  
+   Heavy **ingest** may exceed the default timeout. In Vercel → Project → **Settings** → **Functions**, increase **max duration** for Python / serverless if your plan allows (e.g. Pro).
+
+6. **Stripe webhook (production)**  
    Endpoint: `https://<your-vercel-domain>/stripe-webhook`  
    Event: `checkout.session.completed`  
    Put the **signing secret** into `STRIPE_WEBHOOK_SECRET`.
 
-6. **Deploy** — push to the connected branch or run `vercel` / `vercel --prod` from the repo root.
+7. **Deploy** — push to the connected branch or run `vercel` / `vercel --prod` from the repo root.
 
 ---
 
-## Files added for Vercel
+## Files used for Vercel
 
 | File | Purpose |
 |------|--------|
-| `api/index.py` | Exports ASGI `app` (Mangum + `server.main:app`). |
-| `vercel.json` | Rewrites all traffic to `/api/index`; `functions` uses glob `api/**/*.py` (Vercel requires a glob, not a single file path). |
-| `requirements.txt` | Root install: includes `server/requirements.txt` + **mangum**. |
-| `runtime.txt` | `python-3.12` (Vercel Python version). |
-| `.vercelignore` | Skips `.venv`, `.env`, etc. from uploads. |
+| **`main.py`** (repo root) | Vercel entry: `from server.main import app`. |
+| **`vercel.json`** | Sets `"framework": "fastapi"`. |
+| **`requirements.txt`** (root) | `pip` install: `-r server/requirements.txt`. |
+| **`runtime.txt`** | `python-3.12`. |
+| **`.vercelignore`** | Skips `.venv`, `.env`, etc. from uploads. |
 
-Local development is unchanged: use `uvicorn server.main:app` and `pip install -r server/requirements.txt` as before.
+**Local development** (unchanged):
+
+```bash
+pip install -r server/requirements.txt
+uvicorn server.main:app --reload --host 127.0.0.1 --port 8000
+```
 
 ---
 
 ## Limits and trade-offs
 
-- **Execution time**: Serverless functions have a **maximum duration** (Hobby is short; **Pro** allows longer runs, e.g. 60s — see `vercel.json`). Heavy **ingest** / large PDFs may **time out** on Hobby. If that happens, increase the plan/limit or run the API on a long-timeout host (Railway, Fly, Render, Docker) and use Vercel only for the static frontend.
+- **Execution time**: Serverless **max duration** depends on your Vercel plan. Large PDF ingest may need a higher limit or a non-serverless host (Railway, Fly, Render, Docker).
 - **Cold starts**: First request after idle can be slower while Python loads dependencies (Pinecone, OpenAI, etc.).
 - **File system**: Ephemeral and read-only except `/tmp`. This app does not rely on durable local disk for core flows.
-- **WebSockets**: Not used by this stack; no change needed.
 
 ---
 
@@ -84,9 +93,10 @@ Add the domain in Vercel → Project → Settings → Domains, then set **`KB_AP
 
 ## Troubleshooting
 
-- **Import errors** (`No module named 'server'`): ensure deploy root is the repo root and `api/index.py` is present.
-- **Build fails on `lxml` / native deps**: Vercel’s Python image usually includes build tools; if it fails, open a Vercel build log and consider pinning versions or using a container-based host for the API.
-- **`requirements.txt` / `-r server/requirements.txt`**: Both files must exist in the repo; the root `requirements.txt` delegates to `server/requirements.txt`.
+- **`functions` pattern errors**: Remove any custom `functions` / `api/**/*.py` config; this project uses root **`main.py`** + **`framework: "fastapi"`** only.
+- **Import errors** (`No module named 'server'`): deploy root must be the repo root; **`server/`** must be in the deployment.
+- **Build fails on `lxml` / native deps**: check the Vercel build log; consider a container-based host if needed.
+- **`requirements.txt`**: Root file must include `-r server/requirements.txt` and **`server/requirements.txt`** must exist.
 
 ---
 
