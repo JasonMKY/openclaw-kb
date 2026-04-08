@@ -49,7 +49,7 @@ This repo is a **FastAPI** app that also serves the **vanilla HTML** frontend. V
 | File | Purpose |
 |------|--------|
 | `api/index.py` | Exports ASGI `app` (Mangum + `server.main:app`). |
-| `vercel.json` | Rewrites all traffic to `/api/index`; optional `maxDuration` / memory. |
+| `vercel.json` | Rewrites all traffic to `/api/index`; `functions` uses glob `api/**/*.py` (Vercel requires a glob, not a single file path). |
 | `requirements.txt` | Root install: includes `server/requirements.txt` + **mangum**. |
 | `runtime.txt` | `python-3.12` (Vercel Python version). |
 | `.vercelignore` | Skips `.venv`, `.env`, etc. from uploads. |
