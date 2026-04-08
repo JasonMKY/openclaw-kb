@@ -19,6 +19,9 @@ _index = None
 async def init_pinecone() -> None:
     """Create index if it doesn't exist, then connect."""
     global _pc, _index
+    if not PINECONE_API_KEY:
+        logger.warning("PINECONE_API_KEY is not set; skipping Pinecone init.")
+        return
     _pc = Pinecone(api_key=PINECONE_API_KEY)
     existing = {idx.name for idx in _pc.list_indexes()}
     if PINECONE_INDEX not in existing:
@@ -33,9 +36,20 @@ async def init_pinecone() -> None:
     logger.info("Pinecone index '%s' connected.", PINECONE_INDEX)
 
 
+def _ensure_pinecone() -> None:
+    """Lazy-init Pinecone if the lifespan init was skipped or failed."""
+    global _pc, _index
+    if _index is not None:
+        return
+    if not PINECONE_API_KEY:
+        raise RuntimeError("PINECONE_API_KEY is not set.")
+    _pc = Pinecone(api_key=PINECONE_API_KEY)
+    _index = _pc.Index(PINECONE_INDEX)
+    logger.info("Pinecone lazy-initialized for index '%s'.", PINECONE_INDEX)
+
+
 def get_index():
-    if _index is None:
-        raise RuntimeError("Pinecone not initialized. Did init_pinecone() run?")
+    _ensure_pinecone()
     return _index
 
 

@@ -23,20 +23,29 @@ FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 
 def _write_frontend_config() -> None:
-    """Write Supabase public config to frontend/config.json so the UI can read it."""
+    """Write Supabase public config to frontend/config.json (best-effort).
+
+    On read-only filesystems (e.g. Vercel) this will silently fail;
+    the frontend falls back to the ``GET /frontend/config.json`` route.
+    """
     config = {
         "supabase_url": os.getenv("SUPABASE_URL", ""),
         "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY", ""),
     }
-    FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
-    (FRONTEND_DIR / "config.json").write_text(json.dumps(config), encoding="utf-8")
+    try:
+        FRONTEND_DIR.mkdir(parents=True, exist_ok=True)
+        (FRONTEND_DIR / "config.json").write_text(json.dumps(config), encoding="utf-8")
+    except OSError:
+        logger.info("Could not write frontend/config.json (read-only FS); using API route fallback.")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize Pinecone index on startup."""
     _write_frontend_config()
-    await init_pinecone()
+    try:
+        await init_pinecone()
+    except Exception:
+        logger.exception("Pinecone init failed; vector operations will retry on first request.")
     yield
 
 
@@ -79,6 +88,15 @@ app.include_router(query.router, tags=["Query"])
 app.include_router(documents.router, tags=["Documents"])
 app.include_router(bundles.router, tags=["Bundles"])
 app.include_router(payments.router, tags=["Payments"])
+
+
+@app.get("/frontend/config.json", include_in_schema=False)
+async def frontend_config() -> JSONResponse:
+    """Serve Supabase public config dynamically (works on read-only FS)."""
+    return JSONResponse({
+        "supabase_url": os.getenv("SUPABASE_URL", ""),
+        "supabase_anon_key": os.getenv("SUPABASE_ANON_KEY", ""),
+    })
 
 
 @app.get("/", include_in_schema=False)
