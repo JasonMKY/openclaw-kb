@@ -1,3 +1,1 @@
-# Vercel installs from this file at the repo root (see docs/vercel-deployment.md).
-# Local dev can keep using: pip install -r server/requirements.txt
--r server/requirements.txt
+-r ./server/requirements.txt
