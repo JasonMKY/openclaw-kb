@@ -1,16 +1,20 @@
 import logging
 import os
+import ssl
+from email.message import EmailMessage
 
-import httpx
+import aiosmtplib
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.hostinger.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASS = os.getenv("SMTP_PASS", "")
 CONTACT_TO_EMAIL = os.getenv("CONTACT_TO_EMAIL", "support@clawditnow.com")
-CONTACT_FROM_EMAIL = os.getenv("CONTACT_FROM_EMAIL", "noreply@clawditnow.com")
 
 
 class ContactRequest(BaseModel):
@@ -24,36 +28,44 @@ class ContactRequest(BaseModel):
 async def send_contact(body: ContactRequest) -> dict:
     if not body.message.strip():
         raise HTTPException(status_code=422, detail="Message cannot be empty.")
-    if not RESEND_API_KEY:
+    if not SMTP_USER or not SMTP_PASS:
         raise HTTPException(status_code=503, detail="Email service is not configured.")
 
     subject = body.subject.strip() or "New contact form submission"
-    html = (
+
+    msg = EmailMessage()
+    msg["From"] = f"OpenClaw Contact <{SMTP_USER}>"
+    msg["To"] = CONTACT_TO_EMAIL
+    msg["Subject"] = f"[Contact] {subject}"
+    msg["Reply-To"] = body.email
+    msg.set_content(
+        f"From: {body.name} <{body.email}>\n"
+        f"Subject: {subject}\n"
+        f"{'─' * 40}\n\n"
+        f"{body.message}"
+    )
+    msg.add_alternative(
         f"<p><strong>From:</strong> {body.name} &lt;{body.email}&gt;</p>"
         f"<p><strong>Subject:</strong> {subject}</p>"
         f"<hr>"
-        f"<p>{body.message.replace(chr(10), '<br>')}</p>"
+        f"<p>{body.message.replace(chr(10), '<br>')}</p>",
+        subtype="html",
     )
 
     try:
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            r = await client.post(
-                "https://api.resend.com/emails",
-                headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
-                json={
-                    "from": f"OpenClaw Contact <{CONTACT_FROM_EMAIL}>",
-                    "to": [CONTACT_TO_EMAIL],
-                    "reply_to": body.email,
-                    "subject": f"[Contact] {subject}",
-                    "html": html,
-                },
-            )
-        if not r.is_success:
-            logger.warning("Resend API error %s: %s", r.status_code, r.text)
-            raise HTTPException(status_code=502, detail="Failed to send email. Please try again later.")
-    except httpx.HTTPError as exc:
-        logger.error("Resend request failed: %s", exc)
-        raise HTTPException(status_code=502, detail="Email service unavailable. Please try again later.")
+        tls_context = ssl.create_default_context()
+        await aiosmtplib.send(
+            msg,
+            hostname=SMTP_HOST,
+            port=SMTP_PORT,
+            username=SMTP_USER,
+            password=SMTP_PASS,
+            use_tls=True,
+            tls_context=tls_context,
+        )
+    except Exception as exc:
+        logger.error("SMTP send failed: %s", exc)
+        raise HTTPException(status_code=502, detail="Failed to send email. Please try again later.")
 
     logger.info("Contact email sent from %s <%s>", body.name, body.email)
     return {"sent": True}
