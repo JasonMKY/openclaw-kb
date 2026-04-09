@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from server.routers import ingest, query, documents, bundles, payments
+from server.routers import ingest, query, documents, bundles, payments, contact
 from server.services.vectorstore import init_pinecone
 
 logger = logging.getLogger(__name__)
@@ -88,6 +88,7 @@ app.include_router(query.router, tags=["Query"])
 app.include_router(documents.router, tags=["Documents"])
 app.include_router(bundles.router, tags=["Bundles"])
 app.include_router(payments.router, tags=["Payments"])
+app.include_router(contact.router, tags=["Contact"])
 
 
 @app.get("/favicon.ico", include_in_schema=False)

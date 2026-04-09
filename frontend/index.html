@@ -856,6 +856,7 @@ textarea.form-input { resize:vertical; min-height:80px; line-height:1.6; font-si
       <li><a href="https://docs.openclaw.ai/skills" target="_blank">Skills docs</a></li>
       <li><a onclick="showPage('kbhub')" style="cursor:pointer">KBHub</a></li>
       <li><a href="/docs" target="_blank">API Docs</a></li>
+      <li><a onclick="showPage('contact')" style="cursor:pointer">Contact</a></li>
     </ul>
     <div class="footer-copy">Built for OpenClaw agents · MIT License</div>
   </footer>
@@ -1025,6 +1026,39 @@ textarea.form-input { resize:vertical; min-height:80px; line-height:1.6; font-si
   </div>
 </div>
 
+
+<!-- ── PAGE: CONTACT ── -->
+<div class="page" id="page-contact">
+  <div style="padding:26px 32px 32px; max-width:620px; margin:0 auto">
+    <div class="kbhub-topbar-title">Contact Us</div>
+    <div class="kbhub-topbar-sub" style="margin-top:6px">Have a question, feature request, or just want to say hi? Drop us a line.</div>
+    <form id="contactForm" onsubmit="submitContactForm(event)" style="margin-top:24px">
+      <div class="review-item" style="padding:24px">
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Name</label>
+          <input type="text" class="form-input" id="contactName" placeholder="Your name" required>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="contactEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label">Subject</label>
+          <input type="text" class="form-input" id="contactSubject" placeholder="What's this about?">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">Message</label>
+          <textarea class="form-input" id="contactMessage" placeholder="Tell us what's on your mind…" required style="min-height:140px;resize:vertical"></textarea>
+        </div>
+      </div>
+      <div class="auth-msg" id="contactMsg" style="margin-top:12px"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;align-items:center">
+        <button type="submit" class="btn btn-primary" id="contactSubmitBtn" style="flex:0 0 auto;padding:10px 32px">Send Message</button>
+        <span style="font-size:12px;color:var(--muted)">We'll reply to your email address.</span>
+      </div>
+    </form>
+  </div>
+</div>
 
 <!-- ── KB DETAIL MODAL ── -->
 <div class="modal-overlay" id="kbModal" onclick="if(event.target===this)closeModalById('kbModal')">
@@ -2212,6 +2246,34 @@ document.getElementById('pubName').addEventListener('input', function() {
 });
 function selectIcon(el) { document.querySelectorAll('.icon-opt').forEach(i=>i.classList.remove('selected')); el.classList.add('selected'); }
 function selectRadio(el) { el.closest('.radio-group').querySelectorAll('.radio-option').forEach(o=>o.classList.remove('selected')); el.classList.add('selected'); }
+
+// ── CONTACT FORM ─────────────────────────────────────────────────────────
+async function submitContactForm(e) {
+  e.preventDefault();
+  const btn = document.getElementById('contactSubmitBtn');
+  const msg = document.getElementById('contactMsg');
+  msg.textContent = '';
+  msg.style.color = '';
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    await apiPost('/contact', {
+      name: document.getElementById('contactName').value.trim(),
+      email: document.getElementById('contactEmail').value.trim(),
+      subject: document.getElementById('contactSubject').value.trim(),
+      message: document.getElementById('contactMessage').value.trim(),
+    });
+    msg.style.color = 'var(--green)';
+    msg.textContent = 'Message sent! We\'ll get back to you soon.';
+    document.getElementById('contactForm').reset();
+  } catch (err) {
+    msg.style.color = 'var(--accent)';
+    msg.textContent = err.message || 'Something went wrong. Please try again.';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send Message';
+  }
+}
 
 // ── TOAST ─────────────────────────────────────────────────────────────────
 let toastTimer;
